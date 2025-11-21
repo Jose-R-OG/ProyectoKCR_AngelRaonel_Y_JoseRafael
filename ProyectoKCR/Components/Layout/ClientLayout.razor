@@ -1,0 +1,71 @@
+﻿@using System.Timers
+@inherits LayoutComponentBase
+@implements IDisposable
+
+<div class="kiosk-container">
+    <header class="kiosk-header">
+        <div class="header-left">
+            <img src="img-Vector/logoKCR.png" alt="KCR Print Center" class="header-logo-img" />
+        </div>
+
+        <div class="header-center">
+            SISTEMA DE TURNOS
+        </div>
+
+        <div class="header-right">
+            HORA <span class="time-display">@currentTime</span>
+        </div>
+    </header>
+
+    <main class="kiosk-content">
+        @Body
+    </main>
+
+    <div class="decorations">
+        <svg class="dec-shape top-left" viewBox="0 0 100 100"><path d="M35 20 h30 v25 h25 v30 h-25 v25 h-30 v-25 h-25 v-30 h25 z" fill="none" stroke="#C0C0C0" stroke-width="2" rx="5" /></svg>
+        <svg class="dec-shape top-right" viewBox="0 0 100 100"><path d="M35 20 h30 v25 h25 v30 h-25 v25 h-30 v-25 h-25 v-30 h25 z" fill="none" stroke="#F38B2A" stroke-width="3" rx="5" /></svg>
+        <svg class="dec-shape bottom-left" viewBox="0 0 200 200"><path d="M70 40 h60 v50 h50 v60 h-50 v50 h-60 v-50 h-50 v-60 h50 z" fill="none" stroke="#D3D3D3" stroke-width="4" rx="10" /></svg>
+        <svg class="dec-shape bottom-right" viewBox="0 0 100 100"><path d="M35 20 h30 v25 h25 v30 h-25 v25 h-30 v-25 h-25 v-30 h25 z" fill="#F38B2A" rx="5" /></svg>
+    </div>
+</div>
+
+@code {
+    private string currentTime = DateTime.Now.ToString("HH:mm:ss");
+    // Usamos CancellationTokenSource para detener el bucle cuando el componente se destruye
+    private CancellationTokenSource _clockCts = new CancellationTokenSource();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await StartClockLoop();
+    }
+
+    private async Task StartClockLoop()
+    {
+        var token = _clockCts.Token;
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                // 1. Espera 1 segundo
+                await Task.Delay(1000, token);
+            }
+            catch (TaskCanceledException)
+            {
+                // El componente se cerró, salimos del bucle
+                return;
+            }
+
+            // 2. Actualiza la hora y notifica a Blazor
+            currentTime = DateTime.Now.ToString("HH:mm:ss");
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        // Detenemos el bucle al destruir el componente
+        _clockCts.Cancel();
+        _clockCts.Dispose();
+    }
+}
