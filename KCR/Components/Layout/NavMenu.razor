@@ -4,7 +4,9 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">KCR</a>
+        <NavLink class="navbar-brand" href="">
+            <img src="/Img-Vector/logoKCR.png" alt="KCR Print Center" class="img-size" />
+        </NavLink>
     </div>
 </div>
 
@@ -12,23 +14,6 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="auth">
@@ -41,6 +26,16 @@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/registro-empleado">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Registrar Empleado
+                    </NavLink>
+                </div>
+                <div class="nav-item px3">
+                    <NavLink class="nav-link" href="/lista-empleados">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Listado de Empmleados
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
