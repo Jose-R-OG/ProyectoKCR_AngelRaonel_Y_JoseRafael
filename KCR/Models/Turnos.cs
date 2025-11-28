@@ -9,7 +9,7 @@ public class Turnos
     public int IdTurno { get; set; }
 
     [Required, MaxLength(50)]
-    public string NumTurno { get; set; }
+    public string? NumTurno { get; set; }
 
     public DateTime Fecha { get; set; }
 
