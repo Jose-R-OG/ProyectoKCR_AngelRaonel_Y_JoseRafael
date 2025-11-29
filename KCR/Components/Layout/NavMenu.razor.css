@@ -110,7 +110,46 @@
     }
 
 .nav-scrollable {
+    position: relative;
     display: none;
+    overflow: visible; 
+}
+
+.nav-scrollable .nav {
+    position: relative;
+    z-index: 2;
+}
+
+
+.sidebar-decor.auth-decor {
+    position: absolute;
+    left: 12px;              
+    top: 8px;                 
+    width: 160px;           
+    opacity: 0.14;          
+    pointer-events: none;     
+    z-index: 1;              
+    transform: none;
+}
+.sidebar-decor-2.auth-decor-2 {
+    position: absolute;
+    left: 60px; 
+    top: 350px; 
+    width: 160px; 
+    opacity: 1; 
+    pointer-events: none; 
+    z-index: 1; 
+    transform: none;
+}
+
+/* small responsive adjustments */
+@media (max-width: 760px) {
+    .sidebar-decor.auth-decor {
+        left: 8px;
+        top: 6px;
+        width: 120px;
+        opacity: 0.12;
+    }
 }
 
 .navbar-toggler:checked ~ .nav-scrollable {

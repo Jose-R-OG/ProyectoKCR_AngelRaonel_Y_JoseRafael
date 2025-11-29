@@ -1,0 +1,127 @@
+:root {
+    --kcr-orange: #F2994A;
+    --kcr-dark: #222;
+}
+
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 80px);
+    padding: 24px;
+    background: white;
+}
+
+.login-card {
+    width: min(680px, 92%);
+    max-width: 720px;
+    border-radius: 22px;
+    padding: 34px 36px;
+    border: 8px solid var(--kcr-orange);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+    background: #fff;
+    text-align: center;
+}
+
+.field-title {
+    margin: 0 0 14px 0;
+    font-size: 32px;
+    font-style: italic;
+    color: var(--kcr-dark);
+    text-decoration: underline;
+    text-decoration-color: rgba(51,141,223,0.9);
+    text-underline-offset: 8px;
+}
+
+.password-title {
+    margin-top: 24px;
+}
+
+.input-row {
+    margin: 0 auto 10px auto;
+    max-width: 560px;
+}
+
+.input-styled {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: none;
+    background: #fff;
+    box-shadow: 0 8px 0 var(--kcr-orange);
+    outline: none;
+    transition: box-shadow 0.15s ease, transform 0.06s ease;
+}
+
+    .input-styled::placeholder {
+        color: rgba(0,0,0,0.18);
+        font-style: italic;
+    }
+
+    .input-styled:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 0 rgba(242,153,74,0.28);
+    }
+
+.actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.login-btn {
+    background: #F2994A;
+    border: none;
+    color: white;
+    padding: 14px 36px;
+    font-size: 26px;
+    border-radius: 14px;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.or-row {
+    margin-top: 20px;
+    color: var(--kcr-orange);
+    font-weight: 700;
+    font-style: italic;
+}
+
+.contact-row {
+    margin-top: 12px;
+}
+
+.contact-link {
+    color: var(--kcr-orange);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    font-style: italic;
+}
+
+.validation-message, .text-danger {
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .field-title {
+        font-size: 24px;
+    }
+
+    .login-btn {
+        font-size: 20px;
+        padding: 12px 28px;
+    }
+
+    .login-card {
+        padding: 22px;
+        border-width: 6px;
+        border-radius: 16px;
+    }
+
+    .input-styled {
+        font-size: 16px;
+        padding: 12px 14px;
+    }
+}
