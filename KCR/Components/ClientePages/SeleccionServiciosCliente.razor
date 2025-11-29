@@ -199,7 +199,7 @@
         mostrarTicket = true;
     }
 
-    private void GenerarTicketFinal()
+    private async Task GenerarTicketFinal()
     {
         Clientes cliente = new Clientes();
         cliente.Nombres = NombreRecibido;
@@ -207,7 +207,11 @@
         cliente.Correo = CorreoRecibido;
         cliente.Telefono = TelefonoRecibido;
         cliente.Fecha = DateTime.UtcNow;
-        clienteService.Guardar(cliente);
+        var creado = await clienteService.Guardar(cliente);
+        if (creado)
+        {
+            Console.WriteLine("Hello, World!");
+        }
 
     }
 
