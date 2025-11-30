@@ -1,5 +1,5 @@
 ﻿/* ========================================================================= */
-/* ESTILOS ESPECÍFICOS DE LISTA EMPLEADOS                  */
+/* ESTILOS ESPECÍFICOS DE HISTORIAL CLIENTES (Reutilizando clases)           */
 /* ========================================================================= */
 
 /* --- 1. CONTENEDOR DE LA PÁGINA (Ajuste para MainLayout) --- */
@@ -21,7 +21,7 @@
     display: flex;
     flex-direction: column;
     min-height: 700px;
-    overflow: hidden; /* Oculta el desbordamiento de las esquinas */
+    overflow: hidden;
     font-family: 'Lato', sans-serif;
     padding: 0;
 }
@@ -79,7 +79,7 @@
 }
 
     .search-input-container .form-control {
-        padding-right: 35px; /* Espacio para el icono */
+        padding-right: 35px;
     }
 
 .search-icon {
@@ -96,16 +96,16 @@
 .table-container {
     flex-grow: inherit; /* Ocupa el espacio restante */
     background-color: white;
-    margin: 0 30px; /* Margen lateral dentro de la tarjeta gris */
+    margin: 0 30px;
     border-radius: 8px;
-    overflow: hidden; /* Oculta los bordes de la tabla */
+    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: center;
+    position: relative;
     z-index: 3;
     overflow-x: auto; /* Permite scroll horizontal si la tabla es muy ancha */
 }
 
-/* --- 5. TABLA DE EMPLEADOS --- */
+/* --- 5. TABLA DE EMPLEADOS/HISTORIAL --- */
 .empleados-table {
     width: 100%;
     border-collapse: collapse;
@@ -116,6 +116,7 @@
         padding: 12px 15px;
         text-align: left;
         font-size: 0.95rem;
+        border-bottom: 1px solid #eee;
     }
 
     .empleados-table th {
@@ -125,16 +126,11 @@
         border-bottom: 2px solid #ccc;
     }
 
-    .empleados-table td {
-        border-bottom: 1px solid #eee;
-        color: #333;
-    }
-
     .empleados-table tbody tr:hover {
         background-color: #fafafa;
     }
 
-/* --- 6. BARRA INFERIOR GRIS --- */
+/* --- 6. BARRA INFERIOR GRIS y BOTÓN VOLVER --- */
 .bottom-bar {
     position: absolute;
     bottom: 0;
@@ -145,9 +141,29 @@
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     z-index: 2;
+    /* Estilos para el botón */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 30px;
 }
 
-/* --- 7. BOTONES DE ACCIÓN --- */
+.btn-volver {
+    background-color: #A34857; /* Color de Volver (Rojo/Rosado) */
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+    .btn-volver:hover {
+        background-color: #8C3C48;
+    }
+
+/* --- 7. BOTONES DE ACCIÓN (Modificar/Eliminar/Ver Detalle) --- */
 .btn-action {
     padding: 8px 15px;
     border: none;
@@ -161,7 +177,7 @@
 }
 
 .btn-modificar {
-    background-color: #5BC0DE; /* Azul */
+    background-color: #5BC0DE; /* Azul (Usado para 'Ver Detalle') */
     color: white;
 }
 
@@ -177,21 +193,3 @@
     .btn-eliminar:hover {
         background-color: #8C3C48;
     }
-
-/* --- 6. BARRA INFERIOR GRIS Y BOTÓN VOLVER --- */
-.bottom-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40px;
-    background-color: #ccc;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    z-index: 2;
-    /* Centrar y posicionar el botón */
-    display: flex;
-    justify-content: flex-start; /* Alinea el botón a la izquierda */
-    align-items: center;
-    padding-left: 30px; /* Margen para el botón */
-}

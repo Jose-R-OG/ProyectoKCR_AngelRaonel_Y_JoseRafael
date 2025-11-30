@@ -2,46 +2,68 @@
 @layout MainLayout
 
 <div class="lista-empleados-page">
+    <div class="content">
+        <div class="list-card">
 
-    <div class="list-card">
+            <h1 class="list-title">LISTADO DE EMPLEADOS</h1>
 
-        <h1 class="list-title">Lista de Empleados</h1>
+            <div class="top-toolbar">
+                <div class="filter-group">
+                    <label for="filter-select">Filtrar por</label>
+                    <select id="filter-select" class="form-select" @bind="FiltroSeleccionado">
+                        <option value="">Seleccione</option>
+                        <option value="Cargo">Cargo</option>
+                        <option value="ID">ID</option>
+                        @* Puedes añadir más opciones según tus necesidades *@
+                    </select>
+                </div>
+                <div class="search-group">
+                    <label for="search-input">Búsqueda</label>
+                    <div class="search-input-container">
+                        <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="TerminoBusqueda" @oninput="Buscar" />
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="toolbar">
-            <button class="btn-action btn-nuevo" @onclick="RegistrarNuevo">
-                + Nuevo Empleado
-            </button>
+            <div class="table-container">
+                <table class="empleados-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Cargo</th>
+                            <th>Usuario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var empleado in EmpleadosFiltrados)
+                        {
+                            <tr>
+                                <td>@empleado.IdEmpleado</td>
+                                <td>@empleado.Nombre</td>
+                                <td>@empleado.Cedula</td>
+                                <td>@empleado.Cargo</td>
+                                <td>@empleado.Usuario</td>
+                                <td>
+                                    <button class="btn-action btn-modificar" @onclick="() => Modificar(empleado.IdEmpleado)">Modificar</button>
+                                    <button class="btn-action btn-eliminar" @onclick="() => Eliminar(empleado.IdEmpleado)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Agregamos el botón Volver dentro de la barra gris inferior *@
+            <div class="bottom-bar">
+                <button class="btn-action btn-volver" @onclick="Volver">
+                    <span class="icon">⬅️</span> Volver
+                </button>
+            </div>
         </div>
-
-        <table class="empleados-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Cédula</th>
-                    <th>Cargo</th>
-                    <th>Usuario</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var empleado in Empleados)
-                {
-                    <tr>
-                        <td>@empleado.IdEmpleado</td>
-                        <td>@empleado.Nombre</td>
-                        <td>@empleado.Cedula</td>
-                        <td>@empleado.Cargo</td>
-                        <td>@empleado.Usuario</td>
-                        <td>
-                            <button class="btn-action btn-modificar" @onclick="() => Modificar(empleado.IdEmpleado)">Modificar</button>
-                            <button class="btn-action btn-eliminar" @onclick="() => Eliminar(empleado.IdEmpleado)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
     </div>
 </div>
 
@@ -49,7 +71,12 @@
     [Inject]
     public NavigationManager NavigationManager { get; set; }
 
-    // Modelo de datos simple para la lista (Mismo modelo que usamos en RegistroEmpleado)
+    // --- Nuevas propiedades para la funcionalidad de Búsqueda y Filtro ---
+    private string FiltroSeleccionado { get; set; } = "";
+    private string TerminoBusqueda { get; set; } = "";
+    private List<EmpleadoModelo> EmpleadosFiltrados => AplicarFiltroYBusqueda();
+    // ---------------------------------------------------------------------
+
     public class EmpleadoModelo
     {
         public string IdEmpleado { get; set; }
@@ -60,13 +87,38 @@
         public string Clave { get; set; }
     }
 
-    // Datos de ejemplo para poblar la tabla
     private List<EmpleadoModelo> Empleados = new List<EmpleadoModelo>
     {
         new EmpleadoModelo { IdEmpleado = "E001", Nombre = "Juan Pérez", Cedula = "402-XXXXXXX-X", Cargo = "Diseñador", Usuario = "jperez" },
         new EmpleadoModelo { IdEmpleado = "E002", Nombre = "Maria Gómez", Cedula = "001-XXXXXXX-X", Cargo = "Cajero", Usuario = "mgomez" },
         new EmpleadoModelo { IdEmpleado = "E003", Nombre = "Carlos Ruiz", Cedula = "223-XXXXXXX-X", Cargo = "Supervisor", Usuario = "cruiz" }
     };
+
+    // --- Lógica de Búsqueda y Filtro ---
+    private List<EmpleadoModelo> AplicarFiltroYBusqueda()
+    {
+        var lista = Empleados.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(TerminoBusqueda))
+        {
+            var termino = TerminoBusqueda.ToLower();
+            lista = lista.Where(e => e.Nombre.ToLower().Contains(termino) ||
+                                     e.IdEmpleado.ToLower().Contains(termino) ||
+                                     e.Cargo.ToLower().Contains(termino));
+        }
+
+        // Puedes añadir lógica de filtro por `FiltroSeleccionado` si lo deseas.
+        // Ejemplo: if (FiltroSeleccionado == "Cargo") { lista = lista.OrderBy(e => e.Cargo); }
+
+        return lista.ToList();
+    }
+
+    private void Buscar()
+    {
+        // Esto forzará la re-renderización y la aplicación del filtro
+        StateHasChanged();
+    }
+    // ------------------------------------
 
     private void RegistrarNuevo()
     {
@@ -75,18 +127,21 @@
 
     private void Modificar(string id)
     {
-        // Navegar a la página de modificar con el ID del empleado
         NavigationManager.NavigateTo($"/modificar-empleado/{id}");
     }
 
     private void Eliminar(string id)
     {
-        // Lógica para eliminar el empleado. Se debe añadir una confirmación.
         Console.WriteLine($"Eliminando empleado con ID: {id}");
         var empleadoAEliminar = Empleados.FirstOrDefault(e => e.IdEmpleado == id);
         if (empleadoAEliminar != null)
         {
             Empleados.Remove(empleadoAEliminar);
+            StateHasChanged(); // Para actualizar la tabla
         }
+    }
+    private void Volver(MouseEventArgs args)
+    {
+        throw new NotImplementedException();
     }
 }

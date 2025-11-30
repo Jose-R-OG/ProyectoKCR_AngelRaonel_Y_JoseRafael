@@ -1,0 +1,132 @@
+﻿@page "/historial-clientes"
+@layout MainLayout
+
+<div class="lista-empleados-page">
+    @* Reutilizamos la clase para el layout general (margen) *@
+    <div class="content">
+        <div class="list-card">
+
+            @* 1. TÍTULO: Historial de Servicios y Clientes *@
+            <h1 class="list-title">HISTORIAL DE SERVICIOS Y CLIENTES</h1>
+
+            @* 2. BARRA DE FILTROS Y BÚSQUEDA *@
+            <div class="top-toolbar">
+                <div class="filter-group">
+                    <label for="filter-select">Filtrar por</label>
+                    <select id="filter-select" class="form-select" @bind="FiltroSeleccionado">
+                        <option value="">Seleccione</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Servicio">Servicio</option>
+                        @* Añade más opciones si es necesario (ej. Fecha, ID de Servicio) *@
+                    </select>
+                </div>
+                <div class="search-group">
+                    <label for="search-input">Búsqueda</label>
+                    <div class="search-input-container">
+                        <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="TerminoBusqueda" @oninput="Buscar" />
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+            </div>
+
+            @* 3. TABLA DE HISTORIAL *@
+            <div class="table-container">
+                <table class="empleados-table">
+                    @* Reutilizamos la clase de tabla (empleados-table) *@
+                    <thead>
+                        <tr>
+                            <th>ID Servicio</th>
+                            <th>Cliente</th>
+                            <th>Servicio Realizado</th>
+                            <th>Fecha</th>
+                            <th>Monto Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in RegistrosHistorial)
+                        {
+                            <tr>
+                                <td>@registro.IdServicio</td>
+                                <td>@registro.NombreCliente</td>
+                                <td>@registro.Servicio</td>
+                                <td>@registro.Fecha.ToShortDateString()</td>
+                                <td>@registro.Monto.ToString("C")</td>
+                                <td>
+                                    <button class="btn-action btn-modificar" @onclick="() => VerDetalle(registro.IdServicio)">Ver Detalle</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* 4. BARRA INFERIOR CON BOTÓN VOLVER *@
+            <div class="bottom-bar">
+                <button class="btn-action btn-volver" @onclick="Volver">
+                    <span class="icon">⬅️</span> Volver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    private string FiltroSeleccionado { get; set; } = "";
+    private string TerminoBusqueda { get; set; } = "";
+
+    // Modelo de datos de ejemplo para el Historial
+    public class HistorialModelo
+    {
+        public string IdServicio { get; set; }
+        public string NombreCliente { get; set; }
+        public string Servicio { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Monto { get; set; }
+    }
+
+    private List<HistorialModelo> Registros = new List<HistorialModelo>
+    {
+        new HistorialModelo { IdServicio = "S001", NombreCliente = "Pedro Soto", Servicio = "Impresión a Color (100 pág)", Fecha = new DateTime(2025, 10, 15), Monto = 750.00m },
+        new HistorialModelo { IdServicio = "S002", NombreCliente = "Ana López", Servicio = "Diseño de Flyer", Fecha = new DateTime(2025, 10, 20), Monto = 1200.00m },
+        new HistorialModelo { IdServicio = "S003", NombreCliente = "Marcos Peña", Servicio = "Fotocopia B/N", Fecha = new DateTime(2025, 11, 01), Monto = 50.00m }
+    };
+
+    private List<HistorialModelo> RegistrosHistorial => AplicarFiltroYBusqueda();
+
+    private List<HistorialModelo> AplicarFiltroYBusqueda()
+    {
+        var lista = Registros.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(TerminoBusqueda))
+        {
+            var termino = TerminoBusqueda.ToLower();
+            lista = lista.Where(r => r.NombreCliente.ToLower().Contains(termino) ||
+                                     r.Servicio.ToLower().Contains(termino) ||
+                                     r.IdServicio.ToLower().Contains(termino));
+        }
+
+        // Aquí iría la lógica de filtrado por FiltroSeleccionado si se implementa.
+        return lista.ToList();
+    }
+
+    private void Buscar()
+    {
+        StateHasChanged();
+    }
+
+    private void VerDetalle(string id)
+    {
+        // Redirige a una página de detalle del servicio
+        Console.WriteLine($"Navegando al detalle del servicio: {id}");
+        // NavigationManager.NavigateTo($"/detalle-servicio/{id}");
+    }
+
+    private void Volver()
+    {
+        NavigationManager.NavigateTo("/"); // Asumiendo que "/" es tu página principal.
+    }
+}
