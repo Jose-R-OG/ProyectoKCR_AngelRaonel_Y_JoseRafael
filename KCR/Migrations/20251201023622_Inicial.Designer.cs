@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KCR.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251130233647_PreFacturaDetalles")]
-    partial class PreFacturaDetalles
+    [Migration("20251201023622_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
