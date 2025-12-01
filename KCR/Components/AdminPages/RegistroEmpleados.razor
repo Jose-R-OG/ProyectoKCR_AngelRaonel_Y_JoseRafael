@@ -16,11 +16,7 @@
 @inject NavigationManager Navigation
 @inject ILogger<RegistroEmpleados> Logger
 
-[SupplyParameterFromQuery(Name = "mode")]
-public string? Mode { get; set; }
 
-[SupplyParameterFromQuery(Name = "id")]
-public int? EmpleadoId { get; set; }
 
 <div class="registro-container">
 
@@ -39,7 +35,7 @@ public int? EmpleadoId { get; set; }
 
                 <div class="form-row">
                     <label>IdEmpleado</label>
-                    <input type="text" class="input-corto" readonly value="EmpleadoId ?? Nuevo" />
+                    <input type="text" class="input-corto" readonly value="@(EmpleadoId?.ToString() ?? "Nuevo")" />
                 </div>
 
                 <div class="form-row">
@@ -86,7 +82,8 @@ public int? EmpleadoId { get; set; }
 
 @code {
     private string? statusMessage;
-
+    [SupplyParameterFromQuery(Name = "id")]
+    public int? EmpleadoId { get; set; }
     // Usamos un InputModel para la validación y binding
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
