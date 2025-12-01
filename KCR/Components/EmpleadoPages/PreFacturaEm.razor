@@ -68,7 +68,7 @@
                         placeholder="Buscar Productos o Servicios..." 
                         @bind-value="searchQuery" 
                         @bind-value:event="oninput"
-                        @oninput="SearchItemsAsync"
+                        @* @oninput="SearchItemsAsync" *@
                         class="search-input-large" 
                     />
                 </div>
@@ -129,7 +129,7 @@
                                 <tr key="@item.Id">
                                     <td>@item.Description</td>
                                     <td class="col-cant">
-                                        <input type="number" @bind="item.Quantity" @bind:event="onchange" min="1" class="qty-input" @onchange="StateHasChanged" />
+                                        <input type="number" @bind="item.Quantity" @bind:event="onchange" min="1" class="qty-input" @* @onchange="StateHasChanged"  *@/>
                                     </td>
                                     <td class="col-price">@item.Price.ToString("C2", culturaDO)</td>
                                     <td class="col-total">@item.Total.ToString("C2", culturaDO)</td>
@@ -145,7 +145,7 @@
 </div>
 
 @code {
-    [Parameter] public string TurnoId { get; set; } = string.Empty;
+    [Parameter] public int TurnoId { get; set;}
 
     private bool isLoading = true;
     private bool isSearching = false;
@@ -165,7 +165,7 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        clienteTurno = await turnoService.Buscar(TurnoId); 
+        // clienteTurno = await turnoService.Buscar(TurnoId); 
         isLoading = false;
     }
 
@@ -181,7 +181,7 @@
         isSearching = true;
         StateHasChanged();
 
-        searchResults = await turnoService.Buscar(searchQuery); // llamada real al servicio
+        // searchResults = await turnoService.Buscar(searchQuery); // llamada real al servicio
 
         isSearching = false;
         StateHasChanged();
