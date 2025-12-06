@@ -40,6 +40,12 @@ public class EmpleadoService(IDbContextFactory<ApplicationDbContext> DbFactory)
         }
     }
 
+    public async Task<bool> Eliminar(int Id)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.empleados.Where(e => e.IdEmpleado == Id ).AsNoTracking().ExecuteDeleteAsync() > 0;
+    }
+
     public async Task<Empleados> Buscar(int idempleado)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
