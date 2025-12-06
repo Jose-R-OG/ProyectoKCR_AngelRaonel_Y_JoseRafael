@@ -20,16 +20,17 @@
             <div class="top-toolbar">
                 <div class="filter-group">
                     <label for="filter-select">Filtrar por</label>
-                    <select id="filter-select" class="form-select" @bind="FiltroSeleccionado">
+                    <select id="filter-select" class="form-select" @bind="Filtro">
                         <option value="">Seleccione</option>
+                        <option value="Nombre">Nombre</option>
                         <option value="Cargo">Cargo</option>
-                        <option value="ID">ID</option>
+                        <option value="IdEmpleado">ID</option>
                     </select>
                 </div>
                 <div class="search-group">
                     <label for="search-input">Búsqueda</label>
                     <div class="search-input-container">
-                        <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="TerminoBusqueda" @oninput="Buscar" />
+                        <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="ValorFiltro" @oninput="Buscar" />
                         <span class="search-icon">🔍</span>
                     </div>
                 </div>
@@ -148,7 +149,7 @@
         return lista.ToList();
     }
 
-    private void Buscar()
+    public async Task Eliminar(int id)
     {
         StateHasChanged();
     }
@@ -178,6 +179,8 @@
             Console.WriteLine("Error al intentar eliminar el empleado.");
         }
     }
+
+
 
     private void Volver()
     {
