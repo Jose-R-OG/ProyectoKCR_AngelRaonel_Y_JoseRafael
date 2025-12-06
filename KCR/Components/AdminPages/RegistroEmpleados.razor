@@ -2,7 +2,6 @@
 @attribute [Authorize(Roles = "Administrador")]
 
 @page "/registro-empleado"
-@page "/modificar-empleado/{EmpleadoId:int}"
 
 @layout MainLayout
 @rendermode InteractiveServer
@@ -11,19 +10,19 @@
 @using Microsoft.AspNetCore.Identity
 @using KCR.Data
 @using KCR.Services
-@using KCR.Models
-@using System.Linq
+@using System.Linq @* <-- ¡La más probable para su error actual! *@
 
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager navigationManager
+@inject NavigationManager Navigation
 @inject ILogger<RegistroEmpleados> Logger
-@inject EmpleadoService empleadoService
+
+
 
 <div class="registro-container">
 
     <div class="form-card">
         <div class="card-header">
-            <h3>@title</h3> @* Usa la propiedad calculada 'title' *@
+            <h3>Registro de Empleado</h3>
         </div>
 
         <EditForm Model="Input" OnValidSubmit="GuardarEmpleado" FormName="registro-empleado-form">
@@ -31,11 +30,11 @@
             <ValidationSummary class="text-danger" role="alert" />
 
             <div class="card-body">
-                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")"
+                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")" 
                    role="alert">@statusMessage</p>
 
                 <div class="form-row">
-                    <label>ID Empleado</label>
+                    <label>IdEmpleado</label>
                     <input type="text" class="input-corto" readonly value="@(EmpleadoId?.ToString() ?? "Nuevo")" />
                 </div>
 
@@ -51,32 +50,21 @@
                     <ValidationMessage For="() => Input.Cedula" class="text-danger" />
                 </div>
 
-                @* CAMBIO CLAVE: InputSelect para Cargo *@
                 <div class="form-row">
                     <label>Cargo</label>
-                    <InputSelect @bind-Value="Input.Cargo">
-                        <option value="">Seleccione un Cargo</option>
-                        @foreach (var cargoDisplay in CargoToRoleMap.Keys)
-                        {
-                            <option value="@cargoDisplay">@cargoDisplay</option>
-                        }
-                    </InputSelect>
+                    <InputText type="text" @bind-Value="Input.Cargo" />
                     <ValidationMessage For="() => Input.Cargo" class="text-danger" />
                 </div>
 
                 <div class="form-row">
                     <label>Usuario (Email)</label>
-                    @* En edición, deshabilita el cambio de Email para simplificar el flujo *@
-                    <InputText type="email" @bind-Value="Input.Email" disabled="@isEditing" />
+                    @* Usamos Input.Email para la validación de email/username *@
+                    <InputText type="email" @bind-Value="Input.Email" />
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
-                    @if (isEditing)
-                    {
-                        <small class="text-info">El email no puede ser modificado..</small>
-                    }
                 </div>
 
                 <div class="form-row">
-                    <label>Clave @(isEditing ? "(Opcional - Dejar vacío para no cambiar)" : "")</label>
+                    <label>Clave</label>
                     <InputText type="password" @bind-Value="Input.Password" />
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
@@ -93,143 +81,50 @@
 </div>
 
 @code {
-    [Parameter]
-    public int? EmpleadoId { get; set; }
-
     private string? statusMessage;
-    private bool isEditing => EmpleadoId.HasValue;
-    private string title => isEditing ? "Modificación de Empleado" : "Registro de Empleado";
-
-    // Mapa de cargos en la UI a roles de Identity
-    private readonly Dictionary<string, string> CargoToRoleMap = new Dictionary<string, string>
-    {
-        { "Servicios Express", "EmpleadoExpress" },
-        { "Diseño y Edición", "EmpleadoDE" }
-    };
-
-    // Almacena el rol actual del usuario en modo edición, para detectar si ha cambiado
-    private string? CurrentIdentityRole { get; set; }
-
+    [SupplyParameterFromQuery(Name = "id")]
+    public int? EmpleadoId { get; set; }
+    // Usamos un InputModel para la validación y binding
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnInitialized()
     {
         Input ??= new InputModel();
-        statusMessage = null;
-
-        if (isEditing)
-        {
-            await LoadEmpleadoForEditing();
-        }
-        else
-        {
-            // Resetear para registro
-            CurrentIdentityRole = null;
-            Input = new InputModel();
-        }
-    }
-
-    private async Task LoadEmpleadoForEditing()
-    {
-        var empleado = await empleadoService.Buscar(EmpleadoId!.Value);
-
-        if (empleado == null)
-        {
-            statusMessage = $"Error: No se encontró el empleado con ID {EmpleadoId.Value}.";
-            return;
-        }
-
-        var user = await UserManager.FindByNameAsync(empleado.Usuario);
-
-        if (user == null)
-        {
-            statusMessage = $"Error: El usuario Identity asociado a '{empleado.Usuario}' no fue encontrado.";
-            return;
-        }
-
-        Input.Nombre = empleado.Nombre;
-        Input.Cedula = empleado.Cedula ?? string.Empty;
-        Input.Cargo = empleado.Cargo ?? string.Empty;
-        Input.Email = user.Email ?? empleado.Usuario;
-        Input.Password = string.Empty; 
-
-        var roles = await UserManager.GetRolesAsync(user);
-        CurrentIdentityRole = roles.FirstOrDefault(r => CargoToRoleMap.ContainsValue(r));
     }
 
     private async Task GuardarEmpleado()
     {
         statusMessage = null;
-
-        if (string.IsNullOrWhiteSpace(Input.Cargo) || !CargoToRoleMap.ContainsKey(Input.Cargo))
-        {
-            statusMessage = "Error: Debe seleccionar un cargo válido.";
-            return;
-        }
-
-        if (isEditing)
-        {
-            await ActualizarEmpleado();
-        }
-        else
-        {
-            await RegistrarNuevoEmpleado();
-            await Task.Delay(4000);
-            navigationManager.NavigateTo("/lista-empleados");
-        }
-    }
-
-    // --- Lógica de Registro (Crear Nuevo) ---
-    private async Task RegistrarNuevoEmpleado()
-    {
-        // El rol de Identity se determina por el cargo seleccionado
-        var identityRole = CargoToRoleMap[Input.Cargo];
-
-        // 1. Crear y poblar el objeto ApplicationUser (Identity)
+        
+        // 1. Crear y poblar el objeto ApplicationUser con todos los datos
         var user = new ApplicationUser
         {
-            UserName = Input.Email,
+            UserName = Input.Email, 
             Email = Input.Email,
             EmailConfirmed = true,
-            Nombre = Input.Nombre,
+            
+            // Asignación de las propiedades extendidas:
+            Nombre = Input.Nombre, 
             Cedula = Input.Cedula,
-            Cargo = Input.Cargo // Cargo se guarda en Identity con el nombre Display
+            Cargo = Input.Cargo 
         };
 
+        // 2. Intentar crear el usuario en la base de datos
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (result.Succeeded)
         {
-            // 2. Asignar el rol de Identity
-            var roleResult = await UserManager.AddToRoleAsync(user, identityRole);
+            // 3. Asignar el rol de 'Empleado' (el que definiste en IdentitySeeder)
+            var roleResult = await UserManager.AddToRoleAsync(user, IdentitySeeder.EmployeeRole);
 
             if (roleResult.Succeeded)
             {
-                // 3. Guardar en la tabla KCR.Models.Empleados (La tabla de negocio)
-                var empleado = new Empleados
-                {
-                    Nombre = Input.Nombre,
-                    Usuario = Input.Email,
-                    Cedula = Input.Cedula,
-                    Cargo = Input.Cargo, // Cargo se guarda en la tabla de negocio con el nombre Display
-                    Clave = "IDENTITY_MANAGED"
-                };
-
-                bool dbResult = await empleadoService.Insertar(empleado);
-
-                if (dbResult)
-                {
-                    Logger.LogInformation("Usuario y Empleado registrados correctamente.");
-                    statusMessage = $"Éxito: Empleado {Input.Nombre} registrado con el cargo '{Input.Cargo}'.";
-                    Input = new InputModel(); // Limpiar formulario
-                }
-                else
-                {
-                    // Fallo al guardar en la tabla Empleados, revertimos la creación de Identity.
-                    await UserManager.DeleteAsync(user);
-                    statusMessage = "Error: Fallo al guardar los datos del empleado en la tabla de negocio.";
-                }
+                Logger.LogInformation("Usuario y rol de empleado registrados correctamente.");
+                statusMessage = $"Éxito: Empleado {Input.Email} registrado y rol '{IdentitySeeder.EmployeeRole}' asignado.";
+                
+                // Limpiar el formulario
+                Input = new InputModel();
             }
             else
             {
@@ -240,96 +135,14 @@
         }
         else
         {
+            // Mostrar errores de Identity (ej. "DuplicateUserName")
             statusMessage = $"Error al crear el usuario: {string.Join(", ", result.Errors.Select(e => e.Description))}";
         }
     }
 
-    // --- Lógica de Actualización (Modificar Existente) ---
-    private async Task ActualizarEmpleado()
-    {
-        var empleado = await empleadoService.Buscar(EmpleadoId!.Value);
-        var user = await UserManager.FindByEmailAsync(empleado!.Usuario);
-
-        if (empleado == null || user == null)
-        {
-            statusMessage = "Error al buscar el empleado para actualizar.";
-            return;
-        }
-
-        // El rol de Identity nuevo se determina por el cargo seleccionado
-        var newIdentityRole = CargoToRoleMap[Input.Cargo];
-
-        // --- 1. Actualizar Datos de Identity (ApplicationUser) ---
-        user.Nombre = Input.Nombre;
-        user.Cedula = Input.Cedula;
-        user.Cargo = Input.Cargo; // Actualizar el cargo en ApplicationUser
-
-        var updateResult = await UserManager.UpdateAsync(user);
-
-        if (!updateResult.Succeeded)
-        {
-            statusMessage = $"Error al actualizar el usuario Identity: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}";
-            return;
-        }
-
-        // --- 2. Actualizar Clave si se proporcionó una nueva ---
-        if (!string.IsNullOrEmpty(Input.Password))
-        {
-            var token = await UserManager.GeneratePasswordResetTokenAsync(user);
-            var resetResult = await UserManager.ResetPasswordAsync(user, token, Input.Password);
-
-            if (!resetResult.Succeeded)
-            {
-                statusMessage = $"Error al actualizar la clave: {string.Join(", ", resetResult.Errors.Select(e => e.Description))}";
-                return;
-            }
-        }
-
-        // --- 3. Actualizar Rol si ha cambiado ---
-        if (CurrentIdentityRole != newIdentityRole)
-        {
-            // Remover el rol antiguo (si existe y si es uno de los controlados por el mapeo)
-            if (!string.IsNullOrEmpty(CurrentIdentityRole) && CargoToRoleMap.ContainsValue(CurrentIdentityRole))
-            {
-                await UserManager.RemoveFromRoleAsync(user, CurrentIdentityRole);
-            }
-
-            // Añadir el nuevo rol
-            var roleAddResult = await UserManager.AddToRoleAsync(user, newIdentityRole);
-
-            if (roleAddResult.Succeeded)
-            {
-                CurrentIdentityRole = newIdentityRole; // Actualizar el rol de estado
-            }
-            else
-            {
-                statusMessage = $"Error al cambiar el rol a '{newIdentityRole}': {string.Join(", ", roleAddResult.Errors.Select(e => e.Description))}";
-                return;
-            }
-        }
-
-
-        empleado.Nombre = Input.Nombre;
-        empleado.Cedula = Input.Cedula;
-        empleado.Cargo = Input.Cargo; 
-
-        bool dbResult = await empleadoService.Actualizar(empleado);
-
-        if (dbResult)
-        {
-            statusMessage = $"Éxito: Empleado {Input.Nombre} actualizado correctamente con el cargo '{Input.Cargo}'.";
-            Input.Password = string.Empty; // Limpiar la clave
-        }
-        else
-        {
-            statusMessage = "Error: Fallo al actualizar los datos del empleado en la tabla de negocio.";
-        }
-    }
-
-
     private void IrAtras()
     {
-        navigationManager.NavigateTo("/lista-empleados");
+        Navigation.NavigateTo("/pantalla-principal-admin");
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -337,26 +150,29 @@
     // -------------------------------------------------------------------------------------------------
     public sealed class InputModel
     {
+        // NOTA: Usamos Email y Password para los InputText, ya que tienen DataAnnotations
+        
         // Campos Identity
         [Required(ErrorMessage = "El correo es requerido.")]
         [EmailAddress(ErrorMessage = "Formato de correo inválido.")]
         [Display(Name = "Usuario/Email")]
         public string Email { get; set; } = "";
-
+        
+        [Required(ErrorMessage = "La clave es requerida.")]
         [StringLength(100, ErrorMessage = "La clave debe tener al menos {2} caracteres.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Clave")]
-        // Hacemos el Password opcional a nivel de InputModel, el Required es solo en el registro
         public string Password { get; set; } = "";
 
         // Campos específicos del Empleado
-        [Required(ErrorMessage = "El Nombre es obligatorio.")]
+        // Utilizamos tus DataAnnotations para la validación:
+        [Required(ErrorMessage = "Todos los campos son obligatorios")]
         public string Nombre { get; set; } = "";
-
-        [Required(ErrorMessage = "La Cédula es obligatoria.")]
+        
+        [Required(ErrorMessage = "Todos los campos son obligatorios")]
         public string Cedula { get; set; } = "";
-
-        [Required(ErrorMessage = "El Cargo es obligatorio.")]
+        
+        [Required(ErrorMessage = "Todos los campos son obligatorios")]
         public string Cargo { get; set; } = "";
     }
 }

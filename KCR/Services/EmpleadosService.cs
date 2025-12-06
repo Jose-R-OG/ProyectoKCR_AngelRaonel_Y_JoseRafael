@@ -7,25 +7,6 @@ namespace KCR.Services;
 
 public class EmpleadoService(IDbContextFactory<ApplicationDbContext> DbFactory)
 {
-    public async Task<List<Empleados>> ListarTodosAsync()
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.empleados
-            .AsNoTracking()
-            .ToListAsync();
-    }
-
-
-    public async Task<bool> Eliminar(int idempleado)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        var empleado = await contexto.empleados.FindAsync(idempleado);
-
-        if (empleado == null)
-            return false;
-        contexto.empleados.Remove(empleado);
-        return await contexto.SaveChangesAsync() > 0;
-    }
     public async Task<bool> Existe(int idempleado)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -49,7 +30,7 @@ public class EmpleadoService(IDbContextFactory<ApplicationDbContext> DbFactory)
 
     public async Task<bool> Guardar(Empleados empleado)
     {
-        if (empleado.IdEmpleado == 0 || !await Existe(empleado.IdEmpleado))
+        if (!await Existe(empleado.IdEmpleado))
         {
             return await Insertar(empleado);
         }
@@ -59,12 +40,6 @@ public class EmpleadoService(IDbContextFactory<ApplicationDbContext> DbFactory)
         }
     }
 
-    public async Task<bool> Actualizar(Empleados empleado)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        contexto.empleados.Update(empleado);
-        return await contexto.SaveChangesAsync() > 0;
-    }
     public async Task<Empleados> Buscar(int idempleado)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
