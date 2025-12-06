@@ -52,7 +52,10 @@
 
                 <div class="form-row">
                     <label>Cargo</label>
-                    <InputText type="text" @bind-Value="Input.Cargo" />
+                    <InputSelect type="text" @bind-Value="Input.Cargo">
+                        <option value="EmpleadoExpress">Empleado Express</option>
+                        <option value="EmpleadoDE">Empleado Diseño y edicion</option>
+                    </InputSelect>
                     <ValidationMessage For="() => Input.Cargo" class="text-danger" />
                 </div>
 
