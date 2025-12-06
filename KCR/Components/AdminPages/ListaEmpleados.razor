@@ -112,13 +112,12 @@
         isLoading = true;
         try
         {
-            // Llama al servicio real para obtener todos los empleados
             Empleados = await empleadoService.ListarTodosAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar empleados: {ex.Message}");
-            // En un app real, podrías registrar este error o notificar al usuario.
+
         }
         finally
         {
@@ -126,22 +125,17 @@
         }
     }
 
-    // --- Lógica de Búsqueda y Filtro ---
 
     private List<Empleados> AplicarFiltroYBusqueda()
     {
         var lista = Empleados.AsEnumerable();
         var termino = TerminoBusqueda.ToLower();
-
-        // Aplicar Búsqueda
         if (!string.IsNullOrWhiteSpace(termino))
         {
             lista = lista.Where(e => (e.Nombre != null && e.Nombre.ToLower().Contains(termino)) ||
                                      e.IdEmpleado.ToString().Contains(termino) ||
                                      (e.Cargo != null && e.Cargo.ToLower().Contains(termino)));
         }
-
-        // Aplicar Filtro (si es necesario)
         if (FiltroSeleccionado == "Cargo")
         {
             lista = lista.OrderBy(e => e.Cargo);

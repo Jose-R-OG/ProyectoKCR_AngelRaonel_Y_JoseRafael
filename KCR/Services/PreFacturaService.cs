@@ -81,7 +81,13 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
     public async Task<List<PreFacturas>> Listar(Expression<Func<PreFacturas, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.preFacturas.Include(p => p.PreFacturaDetalles).Where(criterio).AsNoTracking().ToListAsync();
+        return await contexto.preFacturas
+            .Include(p => p.PreFacturaDetalles)
+            .Include(p => p.Clientes) 
+            .Include(p => p.Empleados)  
+            .Where(criterio)
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<List<Servicios>> ListarServicios()
