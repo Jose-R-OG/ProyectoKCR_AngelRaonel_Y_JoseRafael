@@ -390,7 +390,7 @@ h1:focus {
 
 .btn-modificar {
     background-color: #5BC0DE; /* Azul */
-    color: white;
+    color: #fff;
 }
 
     .btn-modificar:hover {
@@ -1218,7 +1218,6 @@ h1:focus {
 .action-button-large {
     background-color: #FFAA00;
     color: white;
-    border: none;
     padding: 15px 30px;
     border-radius: 5px;
     font-size: 18px;
