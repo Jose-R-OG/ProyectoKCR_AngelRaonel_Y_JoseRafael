@@ -25,7 +25,6 @@
                     </div>
                 </div>
 
-                @* Inputs sin el evento automático, solo bind *@
                 <div class="search-group">
                     <div class="search-group">
                         <InputDate class="form-control w-75" @bind-Value="FechaDesde" />
@@ -49,7 +48,6 @@
                 <div class="search-group">
                     <label for="search-input">Búsqueda</label>
                     <div class="search-input-container">
-                        @* Usamos oninput para actualizar y buscar en tiempo real al escribir *@
                         <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="ValorFiltro" @oninput="ActualizarYBuscar" />
                         <span class="search-icon">🔍</span>
                     </div>
@@ -66,7 +64,6 @@
                             <th>ESTADO</th>
                             <th>EMPLEADO</th>
                             <th>TOTAL</th>
-                            <th>ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,9 +78,6 @@
                                     <td><span class="status-@item.Estado.ToLower()">@item.Estado</span></td>
                                     <td>@item.NombreEmpleado</td>
                                     <td class="text-right">@item.Total.ToString("C2")</td>
-                                    <td>
-                                        <button class="btn-action btn-modifica" @onclick="() => VerDetalle(item.IdPreFactura)">Ver Detalle</button>
-                                    </td>
                                 </tr>
                             }
                         }
@@ -107,8 +101,6 @@
 @code {
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
-
-    // Revertido a DateTime.Now como pediste
     private DateTime FechaDesde { get; set; } = DateTime.Now;
     private DateTime FechaHasta { get; set; } = DateTime.Now;
 
@@ -150,7 +142,6 @@
         Historial = historialTemp;
     }
 
-    // Mantenemos este helper para que el buscador de texto funcione correctamente con la lógica combinada
     private async Task ActualizarYBuscar(ChangeEventArgs e)
     {
         ValorFiltro = e.Value?.ToString() ?? string.Empty;
@@ -161,10 +152,9 @@
     {
         var consulta = preFacturasDB.AsEnumerable();
 
-        // Lógica de filtrado por fecha
+  
         consulta = consulta.Where(p => p.Fecha.Date >= FechaDesde.Date && p.Fecha.Date <= FechaHasta.Date);
 
-        // Lógica de filtrado por texto
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
             var valorBusqueda = ValorFiltro.ToLower().Trim();
@@ -193,11 +183,6 @@
         }
 
         await GenerarHistorialViewModel(consulta.ToList());
-    }
-
-    private void VerDetalle(int id)
-    {
-        navigationManager.NavigateTo($"/detalle-factura/{id}");
     }
 
     private void Volver()
