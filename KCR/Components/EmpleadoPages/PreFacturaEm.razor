@@ -1,17 +1,20 @@
 ﻿@page "/prefactura/{TurnoId:int}"
 @layout ClientLayout
-@using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "EmpleadoExpress, EmpleadoDE, Administrador")]
 
+@inject AuthenticationStateProvider AuthStateProvider
+@inject EmpleadoService empleadoService
 @inject NavigationManager navigationManager
 @inject TurnoService turnoService
 @inject PreFacturaService preFacturaService
 @rendermode InteractiveServer
+@inject ToastService toastService
 
 @using System.Globalization
 @using KCR.Models
 
 <div class="prefactura-container">
+    <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.BottomRight" />
     <h1 class="main-title">GENERACIÓN DE PRE-FACTURA</h1>
 
     @if (isLoading)
@@ -222,42 +225,49 @@
     {
         if (PreFacturaItems.Count == 0 || clienteTurno == null) return;
 
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        string nombreUsuario = user.Identity?.Name ?? "";
+
+        var lista = await empleadoService.Listar(e => e.Nombre == nombreUsuario);
+        var empleadoDB = lista.FirstOrDefault();
+
         var nuevaPreFactura = new PreFacturas
         {
+            IdEmpleado = 1,
             IdCliente = clienteTurno.Clientes.IdCliente,
             NombreCliente = clienteTurno.Clientes.Nombres,
             Fecha = DateTime.Now,
-            Estado = "Pendiente", 
+            Estado = "Pendiente",
             Total = this.Total,
-            IdTurno = this.TurnoId,
+            IdTurno = clienteTurno.IdTurno,
             PreFacturaDetalles = new List<PreFacturaDetalles>()
         };
 
         foreach (var item in PreFacturaItems)
         {
-            var detalleLimpio = new PreFacturaDetalles
+            nuevaPreFactura.PreFacturaDetalles.Add(new PreFacturaDetalles
             {
                 IdServicio = item.IdServicio,
                 IdMaterial = item.IdMaterial,
                 Cantidad = item.Cantidad,
-                PrecioUnitario = item.PrecioUnitario,
-                Servicios = null,
-                Materiales = null
-            };
-
-            nuevaPreFactura.PreFacturaDetalles.Add(detalleLimpio);
+                PrecioUnitario = item.PrecioUnitario
+            });
         }
 
-        var resultadoGuardado = await preFacturaService.Guardar(nuevaPreFactura);
+        var guardado = await preFacturaService.Guardar(nuevaPreFactura);
 
-        if (resultadoGuardado)
+        if (guardado)
         {
             await turnoService.CambiarEstadoAsync(TurnoId, "Pre-Facturado");
+            toastService.ShowSuccess("La Pre-factura fue enviada exitosamente a la caja principal.");
+            await Task.Delay(4000);
             navigationManager.NavigateTo($"/empleado/{AreaActual}");
         }
         else
         {
-            Console.WriteLine("Error al guardar la Pre-Factura.");
+            toastService.ShowError("Error al generar la PreFactura");
         }
     }
 }
