@@ -19,8 +19,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Servicios>(entity =>
         {
             entity.HasData(
-                new Servicios { IdServicio = 1, Nombre = "SERVICIO EXPRESS", Precio = 0.00 },
-                new Servicios { IdServicio = 2, Nombre = "DISEÑO Y EDICIÓN", Precio = 0.00 }
+                new Servicios { IdServicio = 18, Nombre = "SERVICIO EXPRESS", Precio = 0.00 },
+                new Servicios { IdServicio = 19, Nombre = "DISEÑO Y EDICIÓN", Precio = 0.00 }
             );
         });
 

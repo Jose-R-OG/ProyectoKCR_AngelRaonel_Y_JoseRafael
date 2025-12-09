@@ -1,0 +1,148 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrador, EmpleadoExpress, EmpleadoDE")]
+
+@page "/registro-material"
+@page "/modificar-material/{IdMaterial:int}"
+@layout MainLayout
+@rendermode InteractiveServer
+@using KCR.Models
+@using KCR.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject MaterialesService materialService
+
+<div class="registro-container">
+    <div class="form-card">
+        <div class="card-header">
+            <h3>@(IdMaterial > 0 ? "Modificar Material" : "Registro de Material")</h3>
+        </div>
+
+        <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
+        <EditForm Model="Input" OnValidSubmit="GuardarMaterial" FormName="registro-material-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="card-body">
+                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")" role="alert">@statusMessage</p>
+
+                <div class="form-row">
+                    <label>ID Material:</label>
+                    <input type="text" class="input-corto" readonly value="@(IdMaterial > 0 ? IdMaterial.ToString() : "Auto")" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Nombre:</label>
+                    <InputText @bind-Value="Input.Nombre" />
+                    <ValidationMessage For="() => Input.Nombre" class="text-danger" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Existencia:</label>
+                    <InputNumber @bind-Value="Input.Existencia" Culture="System.Globalization.CultureInfo.InvariantCulture" />
+                    <ValidationMessage For="() => Input.Existencia" class="text-danger" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Precio Unitario ($):</label>
+                    <InputNumber @bind-Value="Input.PrecioUnitario" Culture="System.Globalization.CultureInfo.InvariantCulture" />
+                    <ValidationMessage For="() => Input.PrecioUnitario" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="card-footer-buttons">
+                <button type="button" class="btn-volver" @onclick="IrAListaMateriales">Volver</button>
+                <button type="submit" class="btn-guardar">@(IdMaterial > 0 ? "Actualizar" : "Guardar")</button>
+            </div>
+        </EditForm>
+    </div>
+    <img src="/Img-Vector/Union.svg" class="vector-corner" />
+</div>
+
+@code {
+    [Parameter]
+    public int IdMaterial { get; set; }
+
+    private string? statusMessage;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IdMaterial > 0)
+        {
+            var materialEnBD = await materialService.Buscar(IdMaterial);
+
+            if (materialEnBD != null)
+            {
+                Input.Nombre = materialEnBD.Nombre;
+                Input.Existencia = materialEnBD.Existencia;
+                Input.PrecioUnitario = materialEnBD.PrecioUnitario;
+            }
+            else
+            {
+                statusMessage = $"Error: Material con ID {IdMaterial} no encontrado.";
+                toastService.ShowError("Material no existe");
+            }
+        }
+    }
+
+    private async Task GuardarMaterial()
+    {
+        statusMessage = null;
+        bool guardado;
+
+        var material = new Materiales
+        {
+            IdMaterial = IdMaterial,
+            Nombre = Input.Nombre,
+            Existencia = Input.Existencia,
+            PrecioUnitario = Input.PrecioUnitario
+        };
+
+        if (IdMaterial > 0)
+        {
+            guardado = await materialService.Modificar(material);
+            statusMessage = guardado ? "Éxito: Material actualizado correctamente." : "Error al actualizar el material.";
+        }
+        else
+        {
+            guardado = await materialService.Guardar(material);
+            statusMessage = guardado ? "Éxito: Material registrado correctamente." : "Error al registrar el material.";
+        }
+
+        if (guardado)
+        {
+            toastService.ShowSuccess(statusMessage);
+            await Task.Delay(1500);
+            IrAListaMateriales();
+        }
+        else
+        {
+            toastService.ShowError(statusMessage);
+        }
+    }
+
+    private void IrAListaMateriales()
+    {
+        navigationManager.NavigateTo("/lista-materiales");
+    }
+
+    public sealed class InputModel
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.-]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La existencia es requerida")]
+        [Range(0, int.MaxValue, ErrorMessage = "La existencia debe ser mayor o igual a 0")]
+        public int Existencia { get; set; } = 0;
+
+        [Required(ErrorMessage = "El precio unitario es requerido")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El precio unitario debe ser mayor que 0")]
+        public double PrecioUnitario { get; set; }
+    }
+}

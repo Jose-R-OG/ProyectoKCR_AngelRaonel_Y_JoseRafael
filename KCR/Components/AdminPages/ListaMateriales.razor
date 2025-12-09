@@ -1,0 +1,203 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrador, EmpleadoExpress, EmpleadoDE")]
+
+@page "/lista-materiales"
+@layout MainLayout
+@rendermode InteractiveServer
+@using KCR.Models
+@using KCR.Services
+@inject NavigationManager navigationManager
+@inject MaterialesService materialService
+@inject ToastService toastService
+
+<div class="listado-container">
+    <div class="header-section">
+        <h2 class="page-title">Inventario de Materiales</h2>
+        <button class="btn-nuevo" @onclick="CrearNuevoMaterial">
+            + Nuevo Material
+        </button>
+    </div>
+
+    <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
+    <div class="search-section">
+        <input type="text"
+               placeholder="Buscar por nombre o ID..."
+               class="search-input"
+               @oninput="FiltrarMateriales"
+               @bind="terminoBusqueda" />
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-indicator">Cargando materiales...</div>
+    }
+    else if (MaterialesFiltrados.Count == 0 && !string.IsNullOrWhiteSpace(terminoBusqueda))
+    {
+        <p class="no-results-message">No se encontraron materiales que coincidan con "@terminoBusqueda".</p>
+    }
+    else if (MaterialesFiltrados.Count == 0 && string.IsNullOrWhiteSpace(terminoBusqueda))
+    {
+        <p class="no-results-message">No hay materiales registrados en el sistema.</p>
+    }
+    else
+    {
+        <div class="table-scroll-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th @onclick='() => OrdenarPor("IdMaterial")'>ID</th>
+                        <th @onclick='() => OrdenarPor("Nombre")'>Nombre</th>
+                        <th @onclick='() => OrdenarPor(" Existencia")'>Existencia</th>
+                        <th @onclick='() => OrdenarPor(" PrecioUnitario")'>Precio Unitario</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var material in MaterialesFiltrados)
+                    {
+                        <tr key="@material.IdMaterial">
+                            <td>@material.IdMaterial</td>
+                            <td>@material.Nombre</td>
+                            <td>@material.Existencia</td>
+                            <td>@material.PrecioUnitario.ToString("C")</td>
+                            <td>
+                                <span class="@(material.Activo ? "badge-activo" : "badge-inactivo")">
+                                    @(material.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-editar btn-small" @onclick="() => ModificarMaterial(material.IdMaterial)">
+                                    Editar
+                                </button>
+                                <button class="btn-estado btn-small @(material.Activo ? "btn-desactivar" : "btn-activar")"
+                                        @onclick="() => CambiarEstado(material.IdMaterial, !material.Activo)">
+                                    @(material.Activo ? "Desactivar" : "Activar")
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Materiales> MaterialesOriginales { get; set; } = new();
+    private List<Materiales> MaterialesFiltrados { get; set; } = new();
+    private string terminoBusqueda = string.Empty;
+    private bool isLoading = true;
+
+    private string ColumnaOrdenamiento = "IdMaterial";
+    private bool EsAscendente = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMateriales();
+    }
+
+    private async Task CargarMateriales()
+    {
+        isLoading = true;
+        try
+        {
+            MaterialesOriginales = await materialService.Listar(p => p.IdMaterial > 0);
+            AplicarFiltroYOrdenamiento();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al cargar materiales: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FiltrarMateriales(ChangeEventArgs e)
+    {
+        terminoBusqueda = e.Value?.ToString() ?? string.Empty;
+        AplicarFiltroYOrdenamiento();
+    }
+
+    private void AplicarFiltroYOrdenamiento()
+    {
+        var query = MaterialesOriginales.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            query = query.Where(m =>
+                m.Nombre.Contains(terminoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                m.IdMaterial.ToString().Equals(terminoBusqueda)
+            );
+        }
+
+        query = ColumnaOrdenamiento switch
+        {
+            "Nombre" => EsAscendente ? query.OrderBy(m => m.Nombre) : query.OrderByDescending(m => m.Nombre),
+            "Existencia" => EsAscendente ? query.OrderBy(m => m.Existencia) : query.OrderByDescending(m => m.Existencia),
+            "PrecioUnitario" => EsAscendente ? query.OrderBy(m => m.PrecioUnitario) : query.OrderByDescending(m => m.PrecioUnitario),
+            "IdMaterial" or _ => EsAscendente ? query.OrderBy(m => m.IdMaterial) : query.OrderByDescending(m => m.IdMaterial),
+        };
+
+        MaterialesFiltrados = query.ToList();
+        StateHasChanged();
+    }
+
+    private void OrdenarPor(string columna)
+    {
+        if (ColumnaOrdenamiento == columna)
+        {
+            EsAscendente = !EsAscendente;
+        }
+        else
+        {
+            ColumnaOrdenamiento = columna;
+            EsAscendente = true;
+        }
+        AplicarFiltroYOrdenamiento();
+    }
+
+    private void CrearNuevoMaterial()
+    {
+        navigationManager.NavigateTo("/registro-material");
+    }
+
+    private void ModificarMaterial(int id)
+    {
+        navigationManager.NavigateTo($"/modificar-material/{id}");
+    }
+
+    private async Task CambiarEstado(int idMaterial, bool nuevoEstado)
+    {
+        try
+        {
+            var material = MaterialesOriginales.FirstOrDefault(m => m.IdMaterial == idMaterial);
+            if (material == null)
+            {
+                toastService.ShowError("Material no encontrado.");
+                return;
+            }
+
+            material.Activo = nuevoEstado;
+
+            var success = await materialService.Modificar(material);
+
+            if (success)
+            {
+                toastService.ShowSuccess($"Material {material.Nombre} {(nuevoEstado ? "activado" : "desactivado")} correctamente.");
+                await CargarMateriales();
+            }
+            else
+            {
+                toastService.ShowError("Error al cambiar el estado.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+}

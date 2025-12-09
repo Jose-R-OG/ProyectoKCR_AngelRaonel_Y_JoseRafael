@@ -1,0 +1,168 @@
+﻿@* @page "/registro-servicio"
+@page "/modificar-servicio/{IdServicio:int}"
+@layout MainLayout
+@rendermode InteractiveServer
+@using KCR.Models
+@using KCR.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject ServicioService servicioService
+
+<div class="registro-container">
+    <div class="form-card">
+        <div class="card-header">
+            <h3>@(IdServicio > 0 ? "Modificar Servicio/Producto" : "Registro de Servicio/Producto")</h3>
+        </div>
+
+        <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
+        <EditForm Model="Input" OnValidSubmit="GuardarServicio" FormName="registro-servicio-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="card-body">
+                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")" role="alert">@statusMessage</p>
+
+                <div class="form-row">
+                    <label>ID Servicio:</label>
+                    <input type="text" class="input-corto" readonly value="@(IdServicio > 0 ? IdServicio.ToString() : "Auto")" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Nombre:</label>
+                    <InputText @bind-Value="Input.Nombre" />
+                    <ValidationMessage For="() => Input.Nombre" class="text-danger" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Precio ($):</label>
+                    <InputNumber @bind-Value="Input.Precio" Culture="System.Globalization.CultureInfo.InvariantCulture" />
+                    <ValidationMessage For="() => Input.Precio" class="text-danger" />
+                </div>
+
+                <div class="form-row">
+                    <label class="required">Tipo:</label>
+                    <InputSelect @bind-Value="Input.TipoServicio" class="form-control">
+                        <option value="">-- Seleccione Tipo --</option>
+                        <option value="Express">Servicio Exprés</option>
+                        <option value="Diseno">Servicio de Diseño/Edición</option>
+                        <option value="Producto">Producto Físico</option>
+                    </InputSelect>
+                    <ValidationMessage For="() => Input.TipoServicio" class="text-danger" />
+                </div>
+
+                @if (IdServicio > 0)
+                {
+                    <div class="form-row">
+                        <label>Estado:</label>
+                        <InputSelect @bind-Value="Input.Activo" class="form-control input-corto">
+                            <option value="True">Activo</option>
+                            <option value="False">Inactivo</option>
+                        </InputSelect>
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer-buttons">
+                <button type="button" class="btn-volver" @onclick="IrAListaServicios">Volver</button>
+                <button type="submit" class="btn-guardar">@(IdServicio > 0 ? "Actualizar" : "Guardar")</button>
+            </div>
+        </EditForm>
+    </div>
+    <img src="/Img-Vector/Union.svg" class="vector-corner" />
+</div>
+
+@code {
+    [Parameter]
+    public int IdServicio { get; set; }
+
+    private string? statusMessage;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IdServicio > 0)
+        {
+            var servicioEnBD = await servicioService.Buscar(IdServicio);
+
+            if (servicioEnBD != null)
+            {
+                Input.Nombre = servicioEnBD.Nombre;
+                Input.Precio = servicioEnBD.Precio;
+                Input.TipoServicio = servicioEnBD.TipoServicio;
+                Input.Activo = servicioEnBD.Activo;
+            }
+            else
+            {
+                statusMessage = $"Error: Servicio con ID {IdServicio} no encontrado.";
+                toastService.ShowError("Servicio no existe");
+            }
+        }
+        else
+        {
+            Input.Activo = true; // Por defecto activo al crear
+        }
+    }
+
+    private async Task GuardarServicio()
+    {
+        statusMessage = null;
+        bool guardado;
+
+        var servicio = new Servicios
+        {
+            IdServicio = IdServicio,
+            Nombre = Input.Nombre,
+            Precio = Input.Precio,
+            TipoServicio = Input.TipoServicio,
+            Activo = Input.Activo
+        };
+
+        if (IdServicio > 0)
+        {
+            guardado = await servicioService.Modificar(servicio);
+            statusMessage = guardado ? "Éxito: Servicio actualizado correctamente." : "Error al actualizar el servicio.";
+        }
+        else
+        {
+            guardado = await servicioService.Guardar(servicio);
+            statusMessage = guardado ? "Éxito: Servicio registrado correctamente." : "Error al registrar el servicio.";
+        }
+
+        if (guardado)
+        {
+            toastService.ShowSuccess(statusMessage);
+            await Task.Delay(1500);
+            IrAListaServicios();
+        }
+        else
+        {
+            toastService.ShowError(statusMessage);
+        }
+    }
+
+    private void IrAListaServicios()
+    {
+        navigationManager.NavigateTo("/lista-servicios");
+    }
+
+    public sealed class InputModel
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(50, ErrorMessage = "Máximo 50 caracteres.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El precio es obligatorio")]
+        [Range(0.01, 1000000.00, ErrorMessage = "El precio debe ser mayor a cero")]
+        public decimal Precio { get; set; }
+
+        [Required(ErrorMessage = "El tipo de servicio es obligatorio")]
+        public string TipoServicio { get; set; } = string.Empty;
+
+        public bool Activo { get; set; } = true;
+    }
+} *@
