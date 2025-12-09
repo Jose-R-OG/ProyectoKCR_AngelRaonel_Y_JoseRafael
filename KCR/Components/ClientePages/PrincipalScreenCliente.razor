@@ -149,15 +149,34 @@
 
     private bool ValidarFormulario()
     {
+        searchMessage = null;
+
         if (string.IsNullOrWhiteSpace(nombre))
         {
             searchMessage = "El nombre es obligatorio.";
+            return false;
+        }
+        if (!EsNombreValido(nombre))
+        {
+            searchMessage = "El nombre solo puede contener letras y espacios.";
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(cedula) && !EsCedulaValida(cedula))
         {
             searchMessage = "La cédula ingresada no es válida.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(telefono) && !EsTelefonoValido(telefono))
+        {
+            searchMessage = "El teléfono debe contener solo números (mínimo 10 dígitos).";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(correo) && !EsCorreoValido(correo))
+        {
+            searchMessage = "El formato del correo electrónico no es válido.";
             return false;
         }
 
@@ -230,6 +249,34 @@
         });
 
         navigationManager.NavigateTo(uri);
+    }
+
+    private bool EsNombreValido(string pNombre)
+    {
+        var regex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.-]+$");
+        return regex.IsMatch(pNombre);
+    }
+
+    private bool EsTelefonoValido(string pTelefono)
+    {
+        string digitsOnly = new string(pTelefono.Where(char.IsDigit).ToArray());
+
+        if (digitsOnly.Length < 10) return false;
+
+        return System.Text.RegularExpressions.Regex.IsMatch(digitsOnly, @"^\d+$");
+    }
+
+    private bool EsCorreoValido(string pCorreo)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(pCorreo);
+            return addr.Address.Equals(pCorreo, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private bool EsCedulaValida(string pCedula)
