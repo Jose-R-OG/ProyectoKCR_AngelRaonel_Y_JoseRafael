@@ -1,7 +1,5 @@
-﻿@layout ClientLayout
-
-@page "/seleccion-servicio"
-
+﻿@page "/seleccion-servicio"
+@layout ClientLayout
 @inject ToastService toastService
 @inject ClienteService clienteService
 @inject TurnoService turnoService
@@ -238,14 +236,15 @@
 
     private async Task GenerarTicketFinal()
     {
-        string nombreServicioDB = areaSeleccionada;
+        string nombreServicioDB = areaSeleccionada.ToUpper().Trim();
 
         var idServicioFinal = await preFacturaService.BuscarIdServicioPorNombre(nombreServicioDB);
 
         if (idServicioFinal == null)
         {
+            toastService.ShowError($"Error: No se pudo encontrar el ID del servicio principal: '{nombreServicioDB}'. Verifique la tabla Servicios y su migración.");
             Console.WriteLine($"Error: No se encontró el Id para el área '{nombreServicioDB}'. Asegúrese de que existe en la tabla Servicios.");
-            mostrarTicket = false; 
+            mostrarTicket = false;
             StateHasChanged();
             return;
         }
@@ -281,7 +280,7 @@
             Turnos turno = new Turnos
             {
                 IdCliente = idClienteFinal,
-                IdServicio = idServicioFinal.Value, 
+                IdServicio = idServicioFinal.Value,
                 NumTurno = codigoTurno,
                 Fecha = DateTime.Now,
                 Estado = "En Espera"

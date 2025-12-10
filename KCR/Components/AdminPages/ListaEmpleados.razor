@@ -1,11 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Administrador")]
-
 @page "/lista-empleados"
-
 @using KCR.Models
 @using KCR.Services
-
 @layout MainLayout
 @inject NavigationManager navigationManager
 @inject EmpleadoService empleadoService
@@ -14,13 +11,13 @@
 <div class="lista-empleados-page">
     <div class="content">
         <div class="list-card">
-
             <h1 class="list-title">LISTADO DE EMPLEADOS</h1>
 
+            <!-- BARRA DE FILTROS + BÚSQUEDA + BOTÓN -->
             <div class="top-toolbar">
                 <div class="filter-group">
-                    <label for="filter-select">Filtrar por</label>
-                    <select id="filter-select" class="form-select" @bind="Filtro">
+                    <label>Filtrar por</label>
+                    <select class="form-select" @bind="Filtro">
                         <option value="">Seleccione</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Cargo">Cargo</option>
@@ -28,71 +25,86 @@
                     </select>
                 </div>
                 <div class="search-group">
-                    <label for="search-input">Búsqueda</label>
+                    <label>Búsqueda</label>
                     <div class="search-input-container">
-                        <input type="text" id="search-input" class="form-control" placeholder="Buscar" @bind="ValorFiltro" @oninput="Buscar" />
-                        <span class="search-icon">🔍</span>
+                        <input type="text" class="form-control"
+                               placeholder="Buscar..."
+                               @bind="ValorFiltro"
+                               @oninput="Buscar" />
+                        <span class="search-icon"><i class="bi bi-search"></i></span>
                     </div>
                 </div>
                 <div class="button-group">
                     <button class="btn-action btn-registrar" @onclick="RegistrarNuevo">
-                        <span class="icon">➕</span> Nuevo Empleado
+                        <i class="bi bi-plus-circle"></i> Nuevo Empleado
                     </button>
                 </div>
             </div>
 
+            <!-- TABLA CON SCROLL INTERNO Y BOTÓN EN TFOOT -->
             <div class="table-container">
-
                 @if (isLoading)
                 {
-                    <p class="loading-message">Cargando listado de empleados...</p>
+                    <p class="loading-message"><i class="bi bi-hourglass-split"></i> Cargando empleados...</p>
                 }
                 else if (!EmpleadosFiltrados.Any())
                 {
-                    <p class="no-results-message">No se encontraron empleados. Intente ajustar la búsqueda o registre uno nuevo.</p>
+                    <p class="no-results-message"><i class="bi bi-exclamation-triangle"></i> No se encontraron empleados.</p>
                 }
                 else
                 {
-                    <table class="empleados-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Cédula</th>
-                                <th>Cargo</th>
-                                <th>Usuario</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var empleado in EmpleadosFiltrados)
-                            {
+                    <div class="table-scroll-wrapper">
+                        <table class="modern-empleados-table">
+                            <thead>
                                 <tr>
-                                    <td>@empleado.IdEmpleado</td>
-                                    <td>@empleado.Nombre</td>
-                                    <td>@empleado.Cedula</td>
-                                    <td>@empleado.Cargo</td>
-                                    <td>@empleado.Usuario</td>
-                                    <td>
-                                        <button class="btn-action btn-modificar" @onclick="() => Modificar(empleado.IdEmpleado)">Modificar</button>
-                                        <button class="btn-action btn-eliminar" @onclick="() => Eliminar(empleado.IdEmpleado)">Eliminar</button>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Cargo</th>
+                                    <th>Usuario</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var empleado in EmpleadosFiltrados)
+                                {
+                                    <tr>
+                                        <td data-label="ID" class="text-center"><strong>#@empleado.IdEmpleado</strong></td>
+                                        <td data-label="Nombre">@empleado.Nombre</td>
+                                        <td data-label="Cédula">@empleado.Cedula</td>
+                                        <td data-label="Cargo">
+                                            <span class="badge badge-cargo">@empleado.Cargo</span>
+                                        </td>
+                                        <td data-label="Usuario">@empleado.Usuario</td>
+                                        <td data-label="Acciones" class="action-cell">
+                                            <button class="btn-action btn-modificar btn-sm"
+                                                    @onclick="() => Modificar(empleado.IdEmpleado)">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                            <button class="btn-action btn-eliminar btn-sm"
+                                                    @onclick="() => Eliminar(empleado.IdEmpleado)">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6" class="table-footer">
+                                        <button class="btn-volver" @onclick="Volver">
+                                            <i class="bi bi-arrow-left"></i> Volver
+                                        </button>
                                     </td>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </tfoot>
+                        </table>
+                    </div>
                 }
-            </div>
-
-            <div class="bottom-bar">
-                <button class="btn-action btn-volver" @onclick="Volver">
-                    <span class="icon">⬅️</span> Volver
-                </button>
             </div>
         </div>
     </div>
 </div>
-
 @code {
     private string ValorFiltro { get; set; } = ""; 
     private string Filtro { get; set; } = ""; 

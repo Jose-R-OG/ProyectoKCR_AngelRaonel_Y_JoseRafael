@@ -14,60 +14,94 @@
         <div class="card-header">
             <h3>@(EmpleadoId > 0 ? "Modificar Empleado" : "Registro de Empleado")</h3>
         </div>
+
         <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
         <EditForm Model="Input" OnValidSubmit="GuardarEmpleado" FormName="registro-empleado-form">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
 
-            <div class="card-body">
-                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")" role="alert">@statusMessage</p>
+            <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")"
+               role="alert" style="text-align:center; margin: 1rem 0;">@statusMessage</p>
 
-                <div class="form-row">
-                    <label>IdEmpleado</label>
-                    <input type="text" class="input-corto" readonly value="@(EmpleadoId > 0 ? EmpleadoId.ToString() : "Auto")" />
-                </div>
-
-                <div class="form-row">
-                    <label>Nombre</label>
-                    <InputText type="text" @bind-Value="Input.Nombre" />
-                    <ValidationMessage For="() => Input.Nombre" class="text-danger" />
-                </div>
-
-                <div class="form-row">
-                    <label>Cédula</label>
-                    <InputText type="text" @bind-Value="Input.Cedula" disabled="@(EmpleadoId > 0)" />
-                    <ValidationMessage For="() => Input.Cedula" class="text-danger" />
-                </div>
-
-                <div class="form-row">
-                    <label>Cargo / Rol</label>
-                    <InputSelect @bind-Value="Input.Cargo" class="form-control">
-                        <option value="">-- Seleccione Rol --</option>
-                        <option value="EmpleadoExpress">Empleado Express</option>
-                        <option value="EmpleadoDE">Empleado Diseño y Edición</option>
-                    </InputSelect>
-                    <ValidationMessage For="() => Input.Cargo" class="text-danger" />
-                </div>
-
-                <div class="form-row">
-                    <label>Usuario (Email)</label>
-                    <InputText type="email" @bind-Value="Input.Email" disabled="@(EmpleadoId > 0)" />
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
-                </div>
-
-                <div class="form-row">
-                    <label>Clave @(EmpleadoId > 0 ? "(Dejar vacío para no cambiar)" : "")</label>
-                    <InputText type="password" @bind-Value="Input.Password" />
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
-                </div>
-            </div>
-
-            <div class="card-footer-buttons">
-                <button type="button" class="btn-volver" @onclick="IrAtras">Volver</button>
-                <button type="submit" class="btn-guardar">@(EmpleadoId > 0 ? "Actualizar" : "Guardar")</button>
-            </div>
+            <table class="modern-form-table">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>IdEmpleado</strong></td>
+                        <td>
+                            <input type="text" class="styled-input readonly"
+                                   readonly value="@(EmpleadoId > 0 ? EmpleadoId.ToString() : "Auto")" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>Nombre</label></td>
+                        <td>
+                            <InputText @bind-Value="Input.Nombre" class="styled-input" placeholder="Nombre completo" />
+                            <ValidationMessage For="() => Input.Nombre" class="text-danger" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>Cédula</label></td>
+                        <td>
+                            <InputText @bind-Value="Input.Cedula" class="styled-input"
+                                       disabled="@(EmpleadoId > 0)" placeholder="000-0000000-0" />
+                            <ValidationMessage For="() => Input.Cedula" class="text-danger" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>Cargo / Rol</label></td>
+                        <td>
+                            <InputSelect @bind-Value="Input.Cargo" class="styled-input">
+                                <option value="">-- Seleccione Rol --</option>
+                                <option value="EmpleadoExpress">Empleado Express</option>
+                                <option value="EmpleadoDE">Empleado Diseño y Edición</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => Input.Cargo" class="text-danger" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>Usuario (Email)</label></td>
+                        <td>
+                            <InputText @bind-Value="Input.Email" class="styled-input"
+                                       type="email" disabled="@(EmpleadoId > 0)" placeholder="correo@ejemplo.com" />
+                            <ValidationMessage For="() => Input.Email" class="text-danger" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Clave @(EmpleadoId > 0 ? "(Dejar vacío para no cambiar)" : "")</label>
+                        </td>
+                        <td>
+                            <InputText @bind-Value="Input.Password" class="styled-input"
+                                       type="password" placeholder="@(EmpleadoId > 0 ? "••••••••" : "Mínimo 6 caracteres")" />
+                            <ValidationMessage For="() => Input.Password" class="text-danger" />
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="table-footer">
+                            <div class="table-action-buttons">
+                                <button type="button" class="btn-volver" @onclick="IrAtras">
+                                    Volver
+                                </button>
+                                <button type="submit" class="btn-guardar">
+                                    @(EmpleadoId > 0 ? "Actualizar" : "Guardar")
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </EditForm>
     </div>
+
     <img src="/Img-Vector/Union.svg" class="vector-corner" />
 </div>
 

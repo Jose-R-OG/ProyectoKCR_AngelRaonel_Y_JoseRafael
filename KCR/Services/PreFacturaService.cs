@@ -100,12 +100,14 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
     public async Task<int?> BuscarIdServicioPorNombre(string nombreServicio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        string lowerNombre = nombreServicio.ToLower();
+        string nombreLimpio = nombreServicio.Trim().ToLower();
 
         var servicio = await contexto.servicios
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Nombre != null && s.Nombre.ToLower() == lowerNombre);
+            .FirstOrDefaultAsync(s =>
+                s.Nombre != null &&
+                s.Nombre.Trim().ToLower() == nombreLimpio
+            );
 
         return servicio?.IdServicio;
     }

@@ -8,7 +8,6 @@ public class Materiales
     [Key]
     public int IdMaterial { get; set; }
     [Required(ErrorMessage = "El nombre es obligatorio.")]
-    [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\.-]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
     public string Nombre { get; set; }
     [Required(ErrorMessage = "La existencia es requerido")]
     [Range(0, int.MaxValue, ErrorMessage = "La existencia deb ser mayor o igual a 0")]

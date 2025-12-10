@@ -4,6 +4,7 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 16px;
 }
 
 a, .btn-link {
@@ -431,6 +432,9 @@ h1:focus {
         background-color: #e7f1ff;
     }
 
+
+
+
 /* ========================================================================= */
 /* 4. FORMULARIO / REGISTRO */
 /* ========================================================================= */
@@ -578,6 +582,151 @@ h1:focus {
     .card-footer-buttons {
         padding: 12px 18px;
     }
+}
+
+/* ========================================================================= */
+/* TABLA MODERNA PARA FORMULARIOS */
+/* ========================================================================= */
+
+.modern-form-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    font-family: 'Lato', sans-serif;
+    table-layout: fixed;
+}
+
+    .modern-form-table thead th {
+        background: #F38B2A;
+        color: white;
+        padding: 14px 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.8px;
+        text-align: left;
+        border-radius: 12px 12px 0 0;
+    }
+
+        .modern-form-table thead th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .modern-form-table thead th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+    .modern-form-table tbody td {
+        padding: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .modern-form-table tbody tr:hover td {
+        background: #FFF8F0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transition: all 0.2s ease;
+    }
+
+    .modern-form-table tbody td:first-child {
+        padding: 16px 16px;
+        font-weight: 700;
+        color: #333;
+        width: 35%;
+        border-radius: 10px 0 0 10px;
+    }
+
+    .modern-form-table tbody td:last-child {
+        padding: 12px 16px;
+        border-radius: 0 10px 10px 0;
+    }
+
+    .modern-form-table .styled-input,
+    .modern-form-table .readonly {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-size: 1rem;
+        color: #333;
+        background: transparent;
+    }
+
+    .modern-form-table .readonly {
+        background-color: #f5f5f5;
+        font-weight: 700;
+        color: #555;
+        padding: 12px 14px;
+        border-radius: 8px;
+    }
+
+    .modern-form-table .text-danger {
+        font-size: 0.85rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+/* Footer con botones */
+.table-footer {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.table-action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    padding: 16px;
+}
+
+    .table-action-buttons .btn-outline,
+    .table-action-buttons .btn-solid {
+        min-width: 120px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .modern-form-table {
+        table-layout: auto;
+    }
+
+        .modern-form-table thead {
+            display: none;
+        }
+
+        .modern-form-table tbody td {
+            display: block;
+            width: 100% !important;
+            border-radius: 10px !important;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+            .modern-form-table tbody td:first-child {
+                border-radius: 10px 10px 0 0;
+                padding: 12px 16px 8px;
+                font-size: 0.9rem;
+                color: #F38B2A;
+                font-weight: 700;
+            }
+
+            .modern-form-table tbody td:last-child {
+                border-radius: 0 0 10px 10px;
+                padding: 8px 16px 12px;
+            }
+
+    .table-action-buttons {
+        flex-direction: column;
+    }
+
+        .table-action-buttons button {
+            width: 100%;
+        }
 }
 
 /* ========================================================================= */
@@ -1116,9 +1265,9 @@ h1:focus {
     font-weight: 700;
 }
 
-.btnattend:hover {
-    background-color: #00CC00 !important;
-}
+    .btn-attend:hover {
+        background-color: #00CC00 !important;
+    }
 
 .action-buttons-wrapper {
     display: flex;
@@ -1841,14 +1990,963 @@ h1:focus {
     font-size: 1.2em;
 }
 
+/* ========================================================================= */
+/* RESPONSIVE MÓVIL (320px - 600px) */
+/* ========================================================================= */
 
-.toast-grande .toast {
-    width: 500px !important; 
-    max-width: 90vw !important; 
-    font-size: 1.2rem; 
+@media (max-width: 600px) {
+    html, body {
+        font-size: 14px;
+    }
+
+    .pantalla-wrapper {
+        padding: 20px 16px;
+        align-items: center;
+    }
+
+    .welcome-title {
+        font-size: 36px !important;
+        text-align: center;
+    }
+
+    .title-underline {
+        margin: 12px auto;
+    }
+
+    .subtitle {
+        font-size: 18px;
+        text-align: center;
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .decor-plus {
+        display: none;
+    }
+
+    .list-title {
+        font-size: 1.3rem;
+        padding: 15px 20px 8px;
+    }
+
+    .top-toolbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 20px;
+    }
+
+    .filter-group, .search-group {
+        width: 100%;
+    }
+
+    .form-select, .form-control {
+        width: 100%;
+    }
+
+    .table-container {
+        margin: 0 15px;
+        overflow-x: auto;
+    }
+
+    .empleados-table th,
+    .empleados-table td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+
+    .btn-action {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .bottom-bar {
+        padding: 0 10px;
+        height: 50px;
+    }
+
+    .registro-container {
+        padding: 20px 15px;
+    }
+
+    .form-card {
+        width: 100%;
+        border-radius: 16px;
+    }
+
+    .card-header-form h3 {
+        font-size: 1.1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+        .form-row label {
+            font-size: 0.95rem;
+        }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-footer-buttons {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 20px;
+    }
+
+    .btn-volver-form,
+    .btn-guardar,
+    .btn-modificar-form {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    .client-grid {
+        flex-direction: column;
+        gap: 30px;
+        padding: 15px;
+    }
+
+    .left-panel-carousel,
+    .right-panel-form {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .carousel-frame,
+    .carousel-img {
+        width: 100%;
+        height: 300px;
+    }
+
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+
+    .form-card {
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .styled-input {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-outline,
+    .btn-solid {
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    .cliente-nombre {
+        font-size: 2rem;
+    }
+
+    .titulo-instruccion {
+        font-size: 1.1rem;
+    }
+
+    .btn-servicio {
+        font-size: 1.3rem;
+        padding: 0.8rem 0;
+    }
+
+    .btn-volver {
+        padding: 0.5rem 2rem;
+        font-size: 1rem;
+    }
+
+    .modal-window {
+        width: 95%;
+        border-radius: 18px;
+    }
+
+    .modal-header {
+        padding: 12px 16px;
+    }
+
+    .header-title {
+        font-size: 1.3rem;
+    }
+
+    .modal-body {
+        padding: 20px 25px 40px;
+    }
+
+    .subtitulo-servicios {
+        font-size: 1rem;
+    }
+
+    .grid-botones {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .btn-grid {
+        padding: 14px 10px;
+        font-size: 0.95rem;
+    }
+
+    .modal-ticket {
+        width: 90%;
+        max-width: 320px;
+        padding: 30px 20px;
+    }
+
+    .dato-turno {
+        font-size: 2.2rem;
+    }
+
+    .btn-generar-ticket {
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
+
+    .queue-card {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .card-header {
+        font-size: 1.2rem;
+        padding: 12px;
+    }
+
+    .queue-table th,
+    .queue-table td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons-wrapper {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .action-button-large {
+        min-width: 100%;
+        padding: 14px;
+        font-size: 1.1rem;
+    }
+
+    .login-panel {
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .form-card.login-card {
+        padding: 30px 20px;
+    }
+
+    .login-action-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+        .login-action-buttons .btn-outline,
+        .login-action-buttons .btn-solid {
+            width: 100%;
+            padding: 16px;
+        }
+
+    .prefactura-container {
+        padding: 15px;
+    }
+
+    .main-title {
+        font-size: 1.5rem;
+    }
+
+    .prefactura-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .search-input-large {
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+
+    .search-results-list,
+    .prefactura-items-table-wrapper {
+        max-height: 250px;
+    }
+
+    .items-table thead th,
+    .search-table thead th {
+        font-size: 0.9rem;
+        padding: 8px 6px;
+    }
+
+    .items-table td,
+    .search-table td {
+        padding: 6px 4px;
+        font-size: 0.85rem;
+    }
+
+    .btn-finalizar {
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    .kiosk-header {
+        padding: 0 15px;
+        height: 70px;
+    }
+
+    .header-center {
+        font-size: 1.2rem;
+    }
+
+    .header-right {
+        font-size: 1rem;
+    }
+
+    .kiosk-content {
+        padding: 15px;
+    }
+
+    .display-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .current-turn-card {
+        padding: 30px 20px;
+    }
+
+    .current-attention .turn-number {
+        font-size: 6rem;
+    }
+
+    .current-turn-card .label {
+        font-size: 1.3rem;
+    }
+
+    .current-turn-card .service-name {
+        font-size: 1.6rem;
+    }
+
+    .waiting-message .turn-number {
+        font-size: 2.5rem;
+    }
+
+    .list-title {
+        font-size: 1.4rem;
+        padding: 12px 15px;
+    }
+
+    .public-queue-table tbody td {
+        padding: 12px 8px;
+        font-size: 1rem;
+    }
+
+    .queue-num {
+        font-size: 1.2rem;
+    }
 }
 
+@media (max-width: 480px) {
+    .welcome-title {
+        font-size: 32px !important;
+    }
 
-.toast-grande .toast-header strong {
-    font-size: 1.3rem;
+    .cliente-nombre {
+        font-size: 1.8rem;
+    }
+
+    .btn-servicio {
+        font-size: 1.2rem;
+    }
+
+    .current-attention .turn-number {
+        font-size: 5rem;
+    }
+
+    .public-queue-table thead th {
+        font-size: 0.9rem;
+        padding: 10px 6px;
+    }
+}
+/* ========================================================================= */
+/* TABLA MODERNA - INVENTARIO DE MATERIALES */
+/* ========================================================================= */
+
+.modern-inventory-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-family: 'Lato', sans-serif;
+}
+
+    .modern-inventory-table thead th {
+        background: #F38B2A;
+        color: white;
+        padding: 14px 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.8px;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        text-align: left;
+    }
+
+        .modern-inventory-table thead th:hover {
+            background: #e07b1f;
+        }
+
+.sort-icon {
+    margin-left: 6px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.modern-inventory-table tbody tr {
+    background: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    border-radius: 12px;
+}
+
+    .modern-inventory-table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        background: #FFF8F0;
+    }
+
+.modern-inventory-table tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    font-size: 1rem;
+    color: #333;
+}
+
+    .modern-inventory-table tbody td.text-center {
+        text-align: center;
+    }
+
+    .modern-inventory-table tbody td.text-end {
+        text-align: right;
+    }
+
+.action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+/* Badges */
+.badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.badge-activo {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactivo {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .modern-inventory-table thead {
+        display: none;
+    }
+
+    .modern-inventory-table tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .modern-inventory-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+        .modern-inventory-table tbody td:last-child {
+            border-bottom: none;
+        }
+
+        .modern-inventory-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: #F38B2A;
+            margin-right: 10px;
+        }
+
+    .action-cell {
+        flex-direction: column;
+    }
+
+        .action-cell button {
+            width: 100%;
+            margin-bottom: 6px;
+        }
+}
+
+/* ========================================================================= */
+/* TABLA MODERNA - LISTADO DE EMPLEADOS */
+/* ========================================================================= */
+
+.modern-empleados-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-family: 'Lato', sans-serif;
+}
+
+    .modern-empleados-table thead th {
+        background: #F38B2A;
+        color: white;
+        padding: 14px 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.8px;
+        text-align: left;
+    }
+
+    .modern-empleados-table tbody tr {
+        background: white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+        border-radius: 12px;
+    }
+
+        .modern-empleados-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: #FFF8F0;
+        }
+
+    .modern-empleados-table tbody td {
+        padding: 16px 12px;
+        vertical-align: middle;
+        font-size: 1rem;
+        color: #333;
+    }
+
+        .modern-empleados-table tbody td.text-center {
+            text-align: center;
+        }
+
+.action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+/* Badge de Cargo */
+.badge-cargo {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    .top-toolbar {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .filter-group, .search-group, .button-group {
+        width: 100%;
+    }
+
+    .btn-registrar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .modern-empleados-table thead {
+        display: none;
+    }
+
+    .modern-empleados-table tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .modern-empleados-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+        .modern-empleados-table tbody td:last-child {
+            border-bottom: none;
+        }
+
+        .modern-empleados-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: #F38B2A;
+            margin-right: 10px;
+        }
+
+    .action-cell {
+        flex-direction: column;
+    }
+
+        .action-cell button {
+            width: 100%;
+            margin-bottom: 6px;
+        }
+}
+
+/* ========================================================================= */
+/* LISTADO DE EMPLEADOS - SCROLL INTERNO Y LAYOUT FIJO */
+/* ========================================================================= */
+
+.list-card {
+    background: #E5E5E5;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 140px); /* Ajusta según tu header */
+}
+
+.list-title {
+    padding: 20px 30px 10px;
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #F08035;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.top-toolbar {
+    padding: 20px 30px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.filter-group, .search-group, .button-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+}
+
+    .filter-group label, .search-group label {
+        font-weight: 700;
+        color: #444;
+        margin-bottom: 6px;
+        font-size: 0.95rem;
+    }
+
+.search-input-container {
+    position: relative;
+}
+
+    .search-input-container .form-control {
+        padding-right: 40px;
+    }
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.btn-registrar {
+    align-self: flex-end;
+    background: #F38B2A;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+    .btn-registrar:hover {
+        background: #e07b1f;
+    }
+
+/* SCROLL SOLO EN EL CUERPO DE LA TABLA */
+.table-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0 30px;
+}
+
+.table-scroll-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding-right: 8px;
+    margin-bottom: 20px;
+}
+
+    .table-scroll-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .table-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .table-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #F38B2A;
+        border-radius: 10px;
+    }
+
+        .table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #e07b1f;
+        }
+
+/* TABLA MODERNA */
+.modern-empleados-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    font-family: 'Lato', sans-serif;
+}
+
+    .modern-empleados-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+        .modern-empleados-table thead th {
+            background: #F38B2A;
+            color: white;
+            padding: 16px 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.8px;
+            text-align: left;
+        }
+
+            .modern-empleados-table thead th:first-child {
+                border-radius: 12px 0 0 0;
+            }
+
+            .modern-empleados-table thead th:last-child {
+                border-radius: 0 12px 0 0;
+            }
+
+    .modern-empleados-table tbody tr {
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+        border-radius: 12px;
+    }
+
+        .modern-empleados-table tbody tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+            background: #FFF8F0;
+        }
+
+    .modern-empleados-table tbody td {
+        padding: 16px 14px;
+        font-size: 1rem;
+        color: #333;
+        vertical-align: middle;
+    }
+
+        .modern-empleados-table tbody td:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .modern-empleados-table tbody td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+.action-cell {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.btn-sm {
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 10px;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.badge-cargo {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    background: #e0f7fa;
+    color: #006064;
+}
+
+/* BOTTOM BAR */
+.bottom-bar {
+    padding: 16px 30px;
+    background: white;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btn-volver {
+    background: white;
+    color: #F38B2A;
+    border: 2px solid #F38B2A;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .btn-volver:hover {
+        background: #FFF5EB;
+    }
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+    .top-toolbar {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .filter-group, .search-group, .button-group {
+        width: 100%;
+    }
+
+    .btn-registrar {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .list-card {
+        height: calc(100vh - 100px);
+    }
+
+    .list-title {
+        font-size: 1.5rem;
+        padding: 16px 20px 8px;
+    }
+
+    .top-toolbar {
+        padding: 16px 20px;
+    }
+
+    .table-container {
+        padding: 0 20px;
+    }
+
+    .modern-empleados-table {
+        min-width: auto;
+    }
+
+        .modern-empleados-table thead {
+            display: none;
+        }
+
+        .modern-empleados-table tbody tr {
+            display: block;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .modern-empleados-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+            .modern-empleados-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: #F38B2A;
+                margin-right: 12px;
+                min-width: 100px;
+            }
+
+    .action-cell {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .action-cell button {
+            width: 100%;
+        }
 }

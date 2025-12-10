@@ -1,88 +1,107 @@
-﻿@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Administrador, EmpleadoExpress, EmpleadoDE")]
+﻿@page "/lista-materiales"
+@attribute [Authorize(Roles = "Administrador")]
 
-@page "/lista-materiales"
-@layout MainLayout
-@rendermode InteractiveServer
 @using KCR.Models
 @using KCR.Services
+@using System.Linq.Expressions
+@layout MainLayout
 @inject NavigationManager navigationManager
-@inject MaterialesService materialService
+@inject MaterialesService materialesService
 @inject ToastService toastService
+@rendermode InteractiveServer
 
-<div class="listado-container">
-    <div class="header-section">
-        <h2 class="page-title">Inventario de Materiales</h2>
-        <button class="btn-nuevo" @onclick="CrearNuevoMaterial">
-            + Nuevo Material
-        </button>
-    </div>
+<div class="list-card lista-materiales-page">
+    <div class="content">
 
-    <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+        <h1 class="list-title">INVENTARIO DE MATERIALES</h1>
 
-    <div class="search-section">
-        <input type="text"
-               placeholder="Buscar por nombre o ID..."
-               class="search-input"
-               @oninput="FiltrarMateriales"
-               @bind="terminoBusqueda" />
-    </div>
+        <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
 
-    @if (isLoading)
-    {
-        <div class="loading-indicator">Cargando materiales...</div>
-    }
-    else if (MaterialesFiltrados.Count == 0 && !string.IsNullOrWhiteSpace(terminoBusqueda))
-    {
-        <p class="no-results-message">No se encontraron materiales que coincidan con "@terminoBusqueda".</p>
-    }
-    else if (MaterialesFiltrados.Count == 0 && string.IsNullOrWhiteSpace(terminoBusqueda))
-    {
-        <p class="no-results-message">No hay materiales registrados en el sistema.</p>
-    }
-    else
-    {
-        <div class="table-scroll-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th @onclick='() => OrdenarPor("IdMaterial")'>ID</th>
-                        <th @onclick='() => OrdenarPor("Nombre")'>Nombre</th>
-                        <th @onclick='() => OrdenarPor(" Existencia")'>Existencia</th>
-                        <th @onclick='() => OrdenarPor(" PrecioUnitario")'>Precio Unitario</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var material in MaterialesFiltrados)
-                    {
-                        <tr key="@material.IdMaterial">
-                            <td>@material.IdMaterial</td>
-                            <td>@material.Nombre</td>
-                            <td>@material.Existencia</td>
-                            <td>@material.PrecioUnitario.ToString("C")</td>
-                            <td>
-                                <span class="@(material.Activo ? "badge-activo" : "badge-inactivo")">
-                                    @(material.Activo ? "Activo" : "Inactivo")
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn-editar btn-small" @onclick="() => ModificarMaterial(material.IdMaterial)">
-                                    Editar
-                                </button>
-                                <button class="btn-estado btn-small @(material.Activo ? "btn-desactivar" : "btn-activar")"
-                                        @onclick="() => CambiarEstado(material.IdMaterial, !material.Activo)">
-                                    @(material.Activo ? "Desactivar" : "Activar")
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="top-toolbar">
+
+            <div class="search-group">
+                <label for="search-input">Búsqueda</label>
+                <div class="search-input-container">
+                    <input type="text" id="search-input" class="form-control"
+                           placeholder="Buscar por nombre o ID..."
+                           @bind="terminoBusqueda"
+                           @oninput="AplicarFiltroYOrdenamiento" />
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-action btn-registrar" @onclick="CrearNuevoMaterial">
+                    <span class="icon">➕</span> Nuevo Material
+                </button>
+            </div>
         </div>
-    }
+
+        <div class="table-container">
+
+            @if (isLoading)
+            {
+                <p class="loading-message">Cargando inventario de materiales...</p>
+            }
+            else if (!MaterialesFiltrados.Any())
+            {
+                <p class="no-results-message">No se encontraron materiales. Intente ajustar la búsqueda o registre uno nuevo.</p>
+            }
+            else
+            {
+                <table class="modern-inventory-table">
+                    <thead>
+                        <tr>
+                            <th @onclick='() => OrdenarPor("IdMaterial")'>ID <span class="sort-icon">@(ColumnaOrdenamiento == "IdMaterial" ? (EsAscendente ? "Up" : "Down") : "")</span></th>
+                            <th @onclick='() => OrdenarPor("Nombre")'>Nombre <span class="sort-icon">@(ColumnaOrdenamiento == "Nombre" ? (EsAscendente ? "Up" : "Down") : "")</span></th>
+                            <th @onclick='() => OrdenarPor("Existencia")'>Existencia <span class="sort-icon">@(ColumnaOrdenamiento == "Existencia" ? (EsAscendente ? "Up" : "Down") : "")</span></th>
+                            <th @onclick='() => OrdenarPor("PrecioUnitario")'>Precio <span class="sort-icon">@(ColumnaOrdenamiento == "PrecioUnitario" ? (EsAscendente ? "Up" : "Down") : "")</span></th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var material in MaterialesFiltrados)
+                        {
+                            <tr>
+                                <td data-label="ID" class="text-center"><strong>#@material.IdMaterial</strong></td>
+                                <td data-label="Nombre">@material.Nombre</td>
+                                <td data-label="Existencia" class="text-center">@material.Existencia</td>
+                                <td data-label="Precio" class="text-end">@material.PrecioUnitario.ToString("C")</td>
+                                <td data-label="Estado" class="text-center">
+                                    <span class="badge @(material.Activo ? "badge-activo" : "badge-inactivo")">
+                                        @(material.Activo ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td data-label="Acciones" class="action-cell">
+                                    <button class="btn-action btn-modificar btn-sm"
+                                            @onclick="() => ModificarMaterial(material.IdMaterial)">
+                                        Edit
+                                    </button>
+                                    <button class="btn-action @(material.Activo ? "btn-eliminar" : "btn-activar") btn-sm"
+                                            @onclick="() => CambiarEstado(material.IdMaterial, !material.Activo)">
+                                        @(material.Activo ? "Desactivar" : "Activar")
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    
+                </table>
+            }
+        </div>
+        
+    </div>
 </div>
+<tfoot>
+    <tr>
+        <td colspan="6" class="table-footer">
+            <button class="btn-volver" @onclick="Volver">
+                <i class="bi bi-arrow-left"></i> Volver
+            </button>
+        </td>
+    </tr>
+</tfoot>
 
 @code {
     private List<Materiales> MaterialesOriginales { get; set; } = new();
@@ -103,7 +122,7 @@
         isLoading = true;
         try
         {
-            MaterialesOriginales = await materialService.Listar(p => p.IdMaterial > 0);
+            MaterialesOriginales = await materialesService.Listar(m => true);
             AplicarFiltroYOrdenamiento();
         }
         catch (Exception ex)
@@ -116,21 +135,16 @@
         }
     }
 
-    private void FiltrarMateriales(ChangeEventArgs e)
-    {
-        terminoBusqueda = e.Value?.ToString() ?? string.Empty;
-        AplicarFiltroYOrdenamiento();
-    }
-
     private void AplicarFiltroYOrdenamiento()
     {
         var query = MaterialesOriginales.AsEnumerable();
+        var textoBusqueda = terminoBusqueda.Trim().ToLower();
 
-        if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+        if (!string.IsNullOrWhiteSpace(textoBusqueda))
         {
             query = query.Where(m =>
-                m.Nombre.Contains(terminoBusqueda, StringComparison.OrdinalIgnoreCase) ||
-                m.IdMaterial.ToString().Equals(terminoBusqueda)
+                m.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                m.IdMaterial.ToString().Equals(textoBusqueda)
             );
         }
 
@@ -183,7 +197,7 @@
 
             material.Activo = nuevoEstado;
 
-            var success = await materialService.Modificar(material);
+            var success = await materialesService.Guardar(material);
 
             if (success)
             {
@@ -199,5 +213,10 @@
         {
             toastService.ShowError($"Error: {ex.Message}");
         }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/");
     }
 }

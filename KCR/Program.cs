@@ -44,6 +44,7 @@ builder.Services.AddScoped<TurnoService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<PreFacturaService>();
 builder.Services.AddScoped<ClienteService>();
+builder.Services.AddScoped<MaterialesService>();
 
 var app = builder.Build();
 
