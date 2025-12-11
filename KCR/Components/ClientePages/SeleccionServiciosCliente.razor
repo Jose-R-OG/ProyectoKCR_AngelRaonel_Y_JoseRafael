@@ -243,7 +243,6 @@
         if (idServicioFinal == null)
         {
             toastService.ShowError($"Error: No se pudo encontrar el ID del servicio principal: '{nombreServicioDB}'. Verifique la tabla Servicios y su migración.");
-            Console.WriteLine($"Error: No se encontró el Id para el área '{nombreServicioDB}'. Asegúrese de que existe en la tabla Servicios.");
             mostrarTicket = false;
             StateHasChanged();
             return;

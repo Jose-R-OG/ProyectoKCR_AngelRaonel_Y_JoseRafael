@@ -21,5 +21,5 @@ public class Materiales
 
     public bool Activo { get; set; } = true;
 
-    public ICollection<PreFacturaDetalles> PreFacturaDetalles { get; set; } = new List<PreFacturaDetalles>();
+    public ICollection<Servicios> servicios { get; set; } = new List<Servicios>();
 }

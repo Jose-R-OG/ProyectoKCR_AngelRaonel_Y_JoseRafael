@@ -19,8 +19,4 @@ public class PreFacturaDetalles
     public int IdPreFactura { get; set; }
     public PreFacturas PreFacturas { get; set; }
 
-    [ForeignKey("Materiales")]
-    public int? IdMaterial { get; set; }
-    public Materiales? Materiales { get; set; }
-
 }

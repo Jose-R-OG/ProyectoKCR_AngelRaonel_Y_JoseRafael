@@ -2,12 +2,13 @@
 using KCR.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using static KCR.Components.EmpleadoPages.PreFacturaEm;
+using static KCR.Components.EmpleadoPages.PreFacturaEm; 
 
 namespace KCR.Services;
 
 public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory)
 {
+
     public async Task<bool> Existe(int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -19,21 +20,35 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
         await using var contexto = await DbFactory.CreateDbContextAsync();
         foreach (var item in detalle)
         {
-            if (item.IdMaterial == null || item.IdMaterial <= 0)
+            Servicios? servicio = item.Servicios;
+
+            if (servicio == null && item.IdServicio.HasValue)
+            {
+                servicio = await contexto.servicios
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.IdServicio == item.IdServicio);
+            }
+
+            if (servicio == null || servicio.IdMaterial == null || servicio.IdMaterial <= 0)
             {
                 continue;
             }
 
-            var material = await contexto.materiales.SingleAsync(m => m.IdMaterial == item.IdMaterial);
+            var material = await contexto.materiales.SingleOrDefaultAsync(m => m.IdMaterial == servicio.IdMaterial);
 
-            if (tipoOperacion == TipoOperacion.Suma)
-                material.Existencia += item.Cantidad;
-            else
-                material.Existencia -= item.Cantidad;
+            if (material != null)
+            {
+                if (tipoOperacion == TipoOperacion.Suma)
+                    material.Existencia += item.Cantidad;
+                else
+                    material.Existencia -= item.Cantidad;
 
-            await contexto.SaveChangesAsync();
+                contexto.materiales.Update(material);
+            }
         }
+        await contexto.SaveChangesAsync();
     }
+
 
     public async Task<bool> Insertar(PreFacturas preFactura)
     {
@@ -49,11 +64,14 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
 
         var detallesOriginales = await contexto.preFacturaDetalles
             .Where(d => d.IdPreFactura == preFactura.IdPreFactura)
+            .Include(d => d.Servicios) 
             .AsNoTracking()
             .ToListAsync();
 
         await AfectarExistencia(detallesOriginales.ToArray(), TipoOperacion.Suma);
+
         contexto.preFacturaDetalles.RemoveRange(detallesOriginales);
+
         contexto.preFacturas.Update(preFactura);
         await AfectarExistencia(preFactura.PreFacturaDetalles.ToArray(), TipoOperacion.Resta);
 
@@ -73,16 +91,23 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
         await using var contexto = await DbFactory.CreateDbContextAsync();
         var preFactura = await Buscar(id);
 
-        await AfectarExistencia(preFactura.PreFacturaDetalles.ToArray(), TipoOperacion.Resta);
-        contexto.preFacturaDetalles.RemoveRange(preFactura.PreFacturaDetalles);
-        contexto.preFacturas.Remove(preFactura);
-        return await contexto.SaveChangesAsync() > 0;
+        if (preFactura != null)
+        {
+            await AfectarExistencia(preFactura.PreFacturaDetalles.ToArray(), TipoOperacion.Suma);
+            contexto.preFacturaDetalles.RemoveRange(preFactura.PreFacturaDetalles);
+            contexto.preFacturas.Remove(preFactura);
+            return await contexto.SaveChangesAsync() > 0;
+        }
+        return false;
     }
 
     public async Task<PreFacturas?> Buscar(int Id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.preFacturas.Include(p => p.PreFacturaDetalles).FirstOrDefaultAsync(p => p.IdPreFactura == Id);
+        return await contexto.preFacturas
+            .Include(p => p.PreFacturaDetalles)
+            .ThenInclude(d => d.Servicios)
+            .FirstOrDefaultAsync(p => p.IdPreFactura == Id);
     }
 
     public async Task<List<PreFacturas>> Listar(Expression<Func<PreFacturas, bool>> criterio)
@@ -90,9 +115,50 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.preFacturas
             .Include(p => p.PreFacturaDetalles)
-            .Include(p => p.Clientes) 
-            .Include(p => p.Empleado)  
+            .Include(p => p.Clientes)
+            .Include(p => p.Empleado)
             .Where(criterio)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<List<PreFacturaDetalles>> BuscarInventario(string query)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return new List<PreFacturaDetalles>();
+        }
+
+        var lowerQuery = query.ToLower();
+
+        var serviciosEncontrados = await contexto.servicios
+            .Include(s => s.Materiales) 
+            .Where(s => s.Nombre.ToLower().Contains(lowerQuery) ||
+                (s.Tipo != null && s.Tipo.ToLower().Contains(lowerQuery)))
+            .AsNoTracking()
+            .ToListAsync();
+
+  
+        var resultados = serviciosEncontrados.Select(s => new PreFacturaDetalles
+        {
+            IdServicio = s.IdServicio,
+            PrecioUnitario = (decimal)s.Precio,
+            Cantidad = 1,
+            Servicios = s 
+        })
+        .OrderBy(i => i.Servicios?.Nombre)
+        .ToList();
+
+        return resultados;
+    }
+
+    public async Task<List<Servicios>> ListarServicios()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.servicios
+            .Where(s => s.IdServicio > 0)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -111,62 +177,8 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
 
         return servicio?.IdServicio;
     }
-    public async Task<List<Servicios>> ListarServicios()
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.servicios
-            .Where(s => s.IdServicio > 0)
-            .AsNoTracking()
-            .ToListAsync();
-    }
 
-    public async Task<List<Materiales>> ListarMateriales()
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.materiales.Where(m => m.IdMaterial > 0).AsNoTracking().ToListAsync();
-    }
 
-    public async Task<List<PreFacturaDetalles>> BuscarInventario(string query)
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return new List<PreFacturaDetalles>();
-        }
-
-        var lowerQuery = query.ToLower();
-
-        var servicios = await contexto.servicios
-            .Where(s => s.Nombre.ToLower().Contains(lowerQuery) ||
-                (s.Tipo != null && s.Tipo.ToLower().Contains(lowerQuery)))
-            .Select(s => new PreFacturaDetalles
-            {
-                IdServicio = s.IdServicio,
-                IdMaterial = null,
-                PrecioUnitario = (decimal)s.Precio,
-                Cantidad = 1,
-                Servicios = new Servicios { Nombre = s.Nombre, Tipo = s.Tipo ?? "Servicio" }
-            })
-            .ToListAsync();
-
-        var materiales = await contexto.materiales
-            .Where(m => m.Existencia > 0)
-            .Where(m => m.Nombre.ToLower().Contains(lowerQuery))
-            .Select(m => new PreFacturaDetalles
-            {
-                IdMaterial = m.IdMaterial,
-                IdServicio = null,
-                PrecioUnitario = (decimal)m.PrecioUnitario,
-                Cantidad = 1,
-                Materiales = new Materiales { Nombre = m.Nombre }
-            })
-            .ToListAsync();
-
-        return servicios.Concat(materiales)
-            .OrderBy(i => i.Servicios?.Nombre ?? i.Materiales?.Nombre)
-            .ToList();
-    }
 }
 
 public enum TipoOperacion
