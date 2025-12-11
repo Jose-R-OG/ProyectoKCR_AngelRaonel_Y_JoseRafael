@@ -17,5 +17,5 @@ public class Materiales
     public double PrecioUnitario { get; set; }
     public bool Activo { get; set; } = true;
 
-    public ICollection<PreFacturaDetalles> PreFacturaDetalles { get; set; } = new List<PreFacturaDetalles>();
+    public ICollection<Servicios> servicios { get; set; } = new List<Servicios>();
 }

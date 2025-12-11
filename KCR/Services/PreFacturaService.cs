@@ -19,12 +19,12 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
         await using var contexto = await DbFactory.CreateDbContextAsync();
         foreach (var item in detalle)
         {
-            if (item.IdMaterial == null || item.IdMaterial <= 0)
+            if (item.Servicios.IdMaterial == null || item.Servicios.IdMaterial <= 0)
             {
                 continue;
             }
 
-            var material = await contexto.materiales.SingleAsync(m => m.IdMaterial == item.IdMaterial);
+            var material = await contexto.materiales.SingleAsync(m => m.IdMaterial == item.Servicios.IdMaterial);
 
             if (tipoOperacion == TipoOperacion.Suma)
                 material.Existencia += item.Cantidad;
