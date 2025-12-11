@@ -7,6 +7,7 @@ namespace KCR.Services;
 
 public class ServiciosService(IDbContextFactory<ApplicationDbContext> DbFactory)
 {
+
     public async Task<bool> Existe(int idservicio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -51,5 +52,18 @@ public class ServiciosService(IDbContextFactory<ApplicationDbContext> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.servicios.Include(s => s.Materiales).Where(criterio).AsNoTracking().ToListAsync();
+    }
+
+    public async Task<List<Materiales>> BuscarMateriales(string query)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        if (string.IsNullOrWhiteSpace(query))
+            return new List<Materiales>();
+
+        return await contexto.materiales
+            .Where(m => m.Activo && m.Nombre.ToLower().Contains(query.ToLower()))
+            .AsNoTracking()
+            .ToListAsync();
     }
 }

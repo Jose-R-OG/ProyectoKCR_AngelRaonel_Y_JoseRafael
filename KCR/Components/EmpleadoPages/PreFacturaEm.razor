@@ -87,7 +87,7 @@
                                 @foreach (var result in searchResults)
                                 {
                                     <tr>
-                                        <td>@(result.Servicios?.Nombre ?? result.Materiales?.Nombre)</td>
+                                        <td>@result.Servicios?.Nombre</td>
                                         <td class="col-price">@result.PrecioUnitario.ToString("C2", culturaDO)</td>
                                         <td class="col-cant">
                                             <input type="number" @bind="result.Cantidad" min="1" class="qty-input" />
@@ -121,7 +121,7 @@
                             @foreach (var item in PreFacturaItems)
                             {
                                 <tr>
-                                    <td>@(item.Servicios?.Nombre ?? item.Materiales?.Nombre)</td>
+                                    <td>@item.Servicios?.Nombre</td>
                                     <td class="col-cant">
                                         <input type="number" @bind="item.Cantidad" min="1" class="qty-input" @bind:after="CalculateTotals" />
                                     </td>
@@ -175,6 +175,7 @@
         }
 
         isSearching = true;
+        // El servicio ya devuelve una lista de Servicios envueltos en PreFacturaDetalles
         searchResults = await preFacturaService.BuscarInventario(searchQuery);
         isSearching = false;
     }
@@ -183,9 +184,9 @@
     {
         if (newItem.Cantidad <= 0) return;
 
+        // CAMBIO: Solo buscamos por IdServicio, ya que IdMaterial no existe en este contexto
         var existingItem = PreFacturaItems.FirstOrDefault(i =>
-            (i.IdServicio != null && i.IdServicio == newItem.IdServicio) ||
-            (i.IdMaterial != null && i.IdMaterial == newItem.IdMaterial));
+            i.IdServicio != null && i.IdServicio == newItem.IdServicio);
 
         if (existingItem != null)
         {
@@ -193,14 +194,13 @@
         }
         else
         {
+            // CAMBIO: Se elimina la asignación de IdMaterial y Materiales
             var itemToAdd = new PreFacturaDetalles
             {
                 IdServicio = newItem.IdServicio,
-                IdMaterial = newItem.IdMaterial,
                 PrecioUnitario = newItem.PrecioUnitario,
                 Cantidad = newItem.Cantidad,
-                Servicios = newItem.Servicios,
-                Materiales = newItem.Materiales
+                Servicios = newItem.Servicios
             };
             PreFacturaItems.Add(itemToAdd);
         }
@@ -233,9 +233,12 @@
         var lista = await empleadoService.Listar(e => e.Nombre == nombreUsuario);
         var empleadoDB = lista.FirstOrDefault();
 
+        // Nota: Asegúrate de tener una lógica de fallback si no encuentra al empleado
+        int idEmpleado = empleadoDB?.IdEmpleado ?? 1;
+
         var nuevaPreFactura = new PreFacturas
         {
-            IdEmpleado = 1,
+            IdEmpleado = idEmpleado,
             IdCliente = clienteTurno.Clientes.IdCliente,
             NombreCliente = clienteTurno.Clientes.Nombres,
             Fecha = DateTime.Now,
@@ -247,10 +250,10 @@
 
         foreach (var item in PreFacturaItems)
         {
+            // CAMBIO: Se elimina la asignación de IdMaterial
             nuevaPreFactura.PreFacturaDetalles.Add(new PreFacturaDetalles
             {
                 IdServicio = item.IdServicio,
-                IdMaterial = item.IdMaterial,
                 Cantidad = item.Cantidad,
                 PrecioUnitario = item.PrecioUnitario
             });

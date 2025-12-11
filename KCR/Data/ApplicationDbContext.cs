@@ -26,18 +26,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             );
         });
 
-
         builder.Entity<PreFacturaDetalles>()
-            .HasOne(pd => pd.Materiales)
-            .WithMany(m => m.PreFacturaDetalles)
-            .HasForeignKey(pd => pd.IdMaterial)
-            .IsRequired(false);
-
-
-        builder.Entity<PreFacturaDetalles>()
-            .HasOne(pd => pd.Servicios)
-            .WithMany(s => s.PreFacturaDetalles)
-            .HasForeignKey(pd => pd.IdServicio)
-            .IsRequired(false);
+                .HasOne(pd => pd.Servicios)
+                .WithMany(s => s.PreFacturaDetalles)
+                .HasForeignKey(pd => pd.IdServicio)
+                .IsRequired(false);
     } 
 }
