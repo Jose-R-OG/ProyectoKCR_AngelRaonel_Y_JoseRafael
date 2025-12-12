@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KCR.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class RegistroServicios : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,7 +81,7 @@ namespace KCR.Migrations
                     Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Usuario = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Clave = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Cedula = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true),
+                    Cedula = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     Cargo = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -96,28 +96,13 @@ namespace KCR.Migrations
                     IdMaterial = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Existencia = table.Column<int>(type: "int", nullable: false),
+                    Existencia = table.Column<double>(type: "float", nullable: false),
                     PrecioUnitario = table.Column<double>(type: "float", nullable: false),
                     Activo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_materiales", x => x.IdMaterial);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "servicios",
-                columns: table => new
-                {
-                    IdServicio = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Tipo = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Precio = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_servicios", x => x.IdServicio);
                 });
 
             migrationBuilder.CreateTable(
@@ -227,6 +212,29 @@ namespace KCR.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "servicios",
+                columns: table => new
+                {
+                    IdServicio = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TipoServicio = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Precio = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Activo = table.Column<bool>(type: "bit", nullable: false),
+                    IdMaterial = table.Column<int>(type: "int", nullable: true),
+                    ConsumoPorUnidad = table.Column<double>(type: "float", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_servicios", x => x.IdServicio);
+                    table.ForeignKey(
+                        name: "FK_servicios_materiales_IdMaterial",
+                        column: x => x.IdMaterial,
+                        principalTable: "materiales",
+                        principalColumn: "IdMaterial");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "turnos",
                 columns: table => new
                 {
@@ -298,17 +306,11 @@ namespace KCR.Migrations
                     Cantidad = table.Column<int>(type: "int", nullable: false),
                     PrecioUnitario = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     IdServicio = table.Column<int>(type: "int", nullable: true),
-                    IdPreFactura = table.Column<int>(type: "int", nullable: false),
-                    IdMaterial = table.Column<int>(type: "int", nullable: true)
+                    IdPreFactura = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_preFacturaDetalles", x => x.IdDetalle);
-                    table.ForeignKey(
-                        name: "FK_preFacturaDetalles_materiales_IdMaterial",
-                        column: x => x.IdMaterial,
-                        principalTable: "materiales",
-                        principalColumn: "IdMaterial");
                     table.ForeignKey(
                         name: "FK_preFacturaDetalles_preFacturas_IdPreFactura",
                         column: x => x.IdPreFactura,
@@ -324,11 +326,11 @@ namespace KCR.Migrations
 
             migrationBuilder.InsertData(
                 table: "servicios",
-                columns: new[] { "IdServicio", "Nombre", "Precio", "Tipo" },
+                columns: new[] { "IdServicio", "Activo", "ConsumoPorUnidad", "IdMaterial", "Nombre", "Precio", "TipoServicio" },
                 values: new object[,]
                 {
-                    { 1, "SERVICIO EXPRESS", 0.0, null },
-                    { 2, "DISEÑO Y EDICIÓN", 0.0, null }
+                    { 1, true, null, null, "SERVICIO EXPRESS", 0.00m, "Express" },
+                    { 2, true, null, null, "DISEÑO Y EDICIÓN", 0.00m, "Diseno" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -371,11 +373,6 @@ namespace KCR.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_preFacturaDetalles_IdMaterial",
-                table: "preFacturaDetalles",
-                column: "IdMaterial");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_preFacturaDetalles_IdPreFactura",
                 table: "preFacturaDetalles",
                 column: "IdPreFactura");
@@ -399,6 +396,11 @@ namespace KCR.Migrations
                 name: "IX_preFacturas_IdTurno",
                 table: "preFacturas",
                 column: "IdTurno");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_servicios_IdMaterial",
+                table: "servicios",
+                column: "IdMaterial");
 
             migrationBuilder.CreateIndex(
                 name: "IX_turnos_IdCliente",
@@ -439,9 +441,6 @@ namespace KCR.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "materiales");
-
-            migrationBuilder.DropTable(
                 name: "preFacturas");
 
             migrationBuilder.DropTable(
@@ -455,6 +454,9 @@ namespace KCR.Migrations
 
             migrationBuilder.DropTable(
                 name: "servicios");
+
+            migrationBuilder.DropTable(
+                name: "materiales");
         }
     }
 }

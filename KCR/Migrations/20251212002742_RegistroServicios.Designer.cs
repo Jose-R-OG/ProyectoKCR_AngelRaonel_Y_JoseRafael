@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KCR.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251210161123_validaciones")]
-    partial class validaciones
+    [Migration("20251212002742_RegistroServicios")]
+    partial class RegistroServicios
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,8 +178,8 @@ namespace KCR.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Existencia")
-                        .HasColumnType("int");
+                    b.Property<double>("Existencia")
+                        .HasColumnType("float");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -204,9 +204,6 @@ namespace KCR.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdMaterial")
-                        .HasColumnType("int");
-
                     b.Property<int>("IdPreFactura")
                         .HasColumnType("int");
 
@@ -217,8 +214,6 @@ namespace KCR.Migrations
                         .HasColumnType("decimal(10, 2)");
 
                     b.HasKey("IdDetalle");
-
-                    b.HasIndex("IdMaterial");
 
                     b.HasIndex("IdPreFactura");
 
@@ -279,17 +274,29 @@ namespace KCR.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdServicio"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("ConsumoPorUnidad")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("IdMaterial")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Precio")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Precio")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Tipo")
+                    b.Property<string>("TipoServicio")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("IdServicio");
+
+                    b.HasIndex("IdMaterial");
 
                     b.ToTable("servicios");
 
@@ -297,14 +304,18 @@ namespace KCR.Migrations
                         new
                         {
                             IdServicio = 1,
+                            Activo = true,
                             Nombre = "SERVICIO EXPRESS",
-                            Precio = 0.0
+                            Precio = 0.00m,
+                            TipoServicio = "Express"
                         },
                         new
                         {
                             IdServicio = 2,
+                            Activo = true,
                             Nombre = "DISEÑO Y EDICIÓN",
-                            Precio = 0.0
+                            Precio = 0.00m,
+                            TipoServicio = "Diseno"
                         });
                 });
 
@@ -479,10 +490,6 @@ namespace KCR.Migrations
 
             modelBuilder.Entity("KCR.Models.PreFacturaDetalles", b =>
                 {
-                    b.HasOne("KCR.Models.Materiales", "Materiales")
-                        .WithMany("PreFacturaDetalles")
-                        .HasForeignKey("IdMaterial");
-
                     b.HasOne("KCR.Models.PreFacturas", "PreFacturas")
                         .WithMany("PreFacturaDetalles")
                         .HasForeignKey("IdPreFactura")
@@ -492,8 +499,6 @@ namespace KCR.Migrations
                     b.HasOne("KCR.Models.Servicios", "Servicios")
                         .WithMany("PreFacturaDetalles")
                         .HasForeignKey("IdServicio");
-
-                    b.Navigation("Materiales");
 
                     b.Navigation("PreFacturas");
 
@@ -519,6 +524,15 @@ namespace KCR.Migrations
                     b.Navigation("Empleado");
 
                     b.Navigation("Turnos");
+                });
+
+            modelBuilder.Entity("KCR.Models.Servicios", b =>
+                {
+                    b.HasOne("KCR.Models.Materiales", "Materiales")
+                        .WithMany("servicios")
+                        .HasForeignKey("IdMaterial");
+
+                    b.Navigation("Materiales");
                 });
 
             modelBuilder.Entity("KCR.Models.Turnos", b =>
@@ -603,7 +617,7 @@ namespace KCR.Migrations
 
             modelBuilder.Entity("KCR.Models.Materiales", b =>
                 {
-                    b.Navigation("PreFacturaDetalles");
+                    b.Navigation("servicios");
                 });
 
             modelBuilder.Entity("KCR.Models.PreFacturas", b =>

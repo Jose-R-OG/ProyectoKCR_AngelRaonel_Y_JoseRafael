@@ -7,11 +7,16 @@ namespace KCR.Services;
 
 public class ServiciosService(IDbContextFactory<ApplicationDbContext> DbFactory)
 {
-
     public async Task<bool> Existe(int idservicio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.servicios.AnyAsync(s => s.IdServicio == idservicio);
+    }
+    public async Task<bool> ExisteNombre(string nombre, int idActual = 0)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.servicios
+            .AnyAsync(s => s.Nombre.ToLower() == nombre.ToLower() && s.IdServicio != idActual);
     }
 
     public async Task<bool> Insertar(Servicios servicio)
@@ -45,16 +50,17 @@ public class ServiciosService(IDbContextFactory<ApplicationDbContext> DbFactory)
     public async Task<Servicios?> Buscar(int idservicio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.servicios.FirstOrDefaultAsync(s => s.IdServicio == idservicio);
+        return await contexto.servicios
+            .Include(s => s.Materiales)
+            .FirstOrDefaultAsync(s => s.IdServicio == idservicio);
     }
 
     public async Task<List<Servicios>> Listar(Expression<Func<Servicios, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.servicios.Include(s => s.Materiales).Where(criterio).AsNoTracking().ToListAsync();
+        return await contexto.servicios.Where(criterio).AsNoTracking().ToListAsync();
     }
-
-    public async Task<List<Materiales>> BuscarMateriales(string query)
+    public async Task<List<Materiales>> BuscarMaterialesPorNombre(string query)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
@@ -63,6 +69,16 @@ public class ServiciosService(IDbContextFactory<ApplicationDbContext> DbFactory)
 
         return await contexto.materiales
             .Where(m => m.Activo && m.Nombre.ToLower().Contains(query.ToLower()))
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<List<Servicios>> ListarTodoConMateriales()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        return await contexto.servicios
+            .Include(s => s.Materiales)
             .AsNoTracking()
             .ToListAsync();
     }

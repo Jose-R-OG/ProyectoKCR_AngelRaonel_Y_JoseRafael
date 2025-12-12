@@ -136,7 +136,7 @@ public class PreFacturaService(IDbContextFactory<ApplicationDbContext> DbFactory
         var serviciosEncontrados = await contexto.servicios
             .Include(s => s.Materiales) 
             .Where(s => s.Nombre.ToLower().Contains(lowerQuery) ||
-                (s.Tipo != null && s.Tipo.ToLower().Contains(lowerQuery)))
+                (s.TipoServicio != null && s.TipoServicio.ToLower().Contains(lowerQuery)))
             .AsNoTracking()
             .ToListAsync();
 

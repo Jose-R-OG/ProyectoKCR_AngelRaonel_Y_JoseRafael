@@ -20,10 +20,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<Servicios>(entity =>
         {
+            entity.Property(s => s.Precio)
+                .HasPrecision(18, 2);
+
             entity.HasData(
-                new Servicios { IdServicio = 1, Nombre = "SERVICIO EXPRESS", Precio = 0.00 },
-                new Servicios { IdServicio = 2, Nombre = "DISEÑO Y EDICIÓN", Precio = 0.00 }
+                new Servicios { IdServicio = 1, Nombre = "SERVICIO EXPRESS", Precio = 0.00M, Activo = true, TipoServicio = "Express" },
+                new Servicios { IdServicio = 2, Nombre = "DISEÑO Y EDICIÓN", Precio = 0.00M, Activo = true, TipoServicio = "Diseno" }
             );
+
         });
 
         builder.Entity<PreFacturaDetalles>()
@@ -31,5 +35,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(s => s.PreFacturaDetalles)
                 .HasForeignKey(pd => pd.IdServicio)
                 .IsRequired(false);
-    } 
+    }
 }

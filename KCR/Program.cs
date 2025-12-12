@@ -45,6 +45,7 @@ builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<PreFacturaService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<MaterialesService>();
+builder.Services.AddScoped<ServiciosService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,158 @@
+﻿@page "/lista-servicios"
+@attribute [Authorize(Roles = "Administrador, Cajero")]
+@layout MainLayout
+@rendermode InteractiveServer
+@using KCR.Models
+@using KCR.Services
+@inject ServiciosService servicioService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+<div class="lista-container">
+    <div class="form-card">
+        <div class="card-header">
+            <h3>📋 Lista de Servicios y Productos</h3>
+        </div>
+
+        <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
+
+        <div class="card-body">
+            <div class="search-and-new">
+                <div class="search-box">
+                    <input type="text"
+                           placeholder="Buscar por Nombre..."
+                           @bind-value="FiltroNombre"
+                           @bind-value:event="oninput"
+                           @onkeyup="FiltrarServicios" />
+                </div>
+                <button class="btn btn-success btn-sm" @onclick="IrARegistro">
+                    + Nuevo Servicio/Producto
+                </button>
+            </div>
+
+            @if (ServiciosListados == null)
+            {
+                <div class="text-center p-5">
+                    <p>Cargando servicios...</p>
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (!ServiciosListados.Any())
+            {
+                <div class="alert alert-info mt-3">
+                    No se encontraron servicios registrados o que coincidan con el filtro.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive mt-3">
+                    <table class="table table-striped table-hover small-text-table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Precio</th>
+                                <th>Tipo</th>
+                                <th>Material Consumo</th>
+                                <th>Consumo (Unidad)</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var servicio in ServiciosListados)
+                            {
+                                <tr>
+                                    <td>@servicio.IdServicio</td>
+                                    <td>@servicio.Nombre</td>
+                                    <td>@servicio.Precio.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-DO"))</td>
+                                    <td>@servicio.TipoServicio</td>
+                                    <td>@(servicio.Materiales?.Nombre ?? "N/A")</td>
+                                    <td>@(servicio.ConsumoPorUnidad.HasValue? servicio.ConsumoPorUnidad.Value.ToString("N1") : "N/A")</td>
+                                    <td>
+                                        <span class="badge @(servicio.Activo ? "bg-success" : "bg-danger")">
+                                            @(servicio.Activo ? "Activo" : "Inactivo")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-2" @onclick="() => IrAEdicion(servicio.IdServicio)">
+                                            <i class="oi oi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm @(servicio.Activo ? "btn-warning" : "btn-primary")" @onclick="() => CambiarEstado(servicio)">
+                                            <i class="oi oi-@(servicio.Activo ? "circle-x" : "check")"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+    <img src="/Img-Vector/Union.svg" class="vector-corner" />
+</div>
+
+@code {
+    private List<Servicios>? ServiciosOriginales;
+    private List<Servicios>? ServiciosListados;
+    private string FiltroNombre = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarServicios();
+    }
+
+    private async Task CargarServicios()
+    {
+        ServiciosOriginales = await servicioService.ListarTodoConMateriales();
+        ServiciosListados = ServiciosOriginales;
+    }
+
+    private async Task FiltrarServicios()
+    {
+        await Task.Delay(200); 
+
+        if (ServiciosOriginales == null) return;
+
+        if (string.IsNullOrWhiteSpace(FiltroNombre))
+        {
+            ServiciosListados = ServiciosOriginales;
+        }
+        else
+        {
+            ServiciosListados = ServiciosOriginales
+                .Where(s => s.Nombre.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void IrARegistro()
+    {
+        navigationManager.NavigateTo("/registro-servicio");
+    }
+
+    private void IrAEdicion(int idServicio)
+    {
+        navigationManager.NavigateTo($"/modificar-servicio/{idServicio}");
+    }
+
+    private async Task CambiarEstado(Servicios servicio)
+    {
+        servicio.Activo = !servicio.Activo;
+        var exito = await servicioService.Guardar(servicio);
+
+        if (exito)
+        {
+            toastService.ShowSuccess($"Servicio '{servicio.Nombre}' ha sido {(servicio.Activo ? "Activado" : "Desactivado")}.");
+            StateHasChanged();
+        }
+        else
+        {
+            toastService.ShowError($"Error al cambiar el estado del servicio '{servicio.Nombre}'.");
+            servicio.Activo = !servicio.Activo;
+        }
+    }
+}

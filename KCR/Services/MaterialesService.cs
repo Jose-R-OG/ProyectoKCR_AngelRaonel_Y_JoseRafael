@@ -52,4 +52,23 @@ public class MaterialesService(IDbContextFactory<ApplicationDbContext> DbFactory
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.materiales.Where(criterio).AsNoTracking().ToListAsync();
     }
+
+    public async Task<List<Materiales>> ListarTodo()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.materiales.AsNoTracking().ToListAsync();
+    }
+
+    public async Task<List<Materiales>> BuscarMaterialesPorNombre(string query)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        if (string.IsNullOrWhiteSpace(query))
+            return new List<Materiales>();
+
+        return await contexto.materiales
+            .Where(m => m.Activo && m.Nombre.ToLower().Contains(query.ToLower()))
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

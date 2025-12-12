@@ -10,7 +10,8 @@
 @using System.ComponentModel.DataAnnotations
 @inject ToastService toastService
 @inject NavigationManager navigationManager
-@inject ServicioService servicioService
+@inject ServiciosService servicioService
+@inject MaterialesService materialesService
 
 <div class="registro-container">
     <div class="form-card">
@@ -65,7 +66,70 @@
                         </InputSelect>
                     </div>
                 }
-            </div>
+                
+                <hr class="mt-4 mb-4" />
+
+                <h4>Material de Consumo (Máx. 1 Material)</h4>
+                
+                <div class="material-search-section">
+                    @if (Input.IdMaterial == null)
+                    {
+                        <div class="form-row-material">
+                            <InputText placeholder="Buscar material por nombre..." @bind-Value="BusquedaMaterial" @oninput="BuscarMateriales" />
+                            <button type="button" class="btn btn-sm btn-info" @onclick="() => { BusquedaMaterial = string.Empty; MaterialesEncontrados = null; MostrarOpcionEliminar = false; }">Limpiar Búsqueda</button>
+                        </div>
+                        
+                        @if (MaterialesEncontrados != null && MaterialesEncontrados.Any())
+                        {
+                            <div class="material-search-results">
+                                @foreach (var material in MaterialesEncontrados)
+                                {
+                                    <div class="material-result-item">
+                                        <span>@material.Nombre (Existencia: @material.Existencia)</span>
+                                        <button type="button" class="btn btn-sm btn-success" @onclick="() => SeleccionarMaterial(material)">Seleccionar</button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(BusquedaMaterial) && (MaterialesEncontrados == null || !MaterialesEncontrados.Any()))
+                        {
+                            <p class="text-muted">No se encontraron materiales activos con ese nombre.</p>
+                        }
+
+                        @if (MostrarOpcionEliminar)
+                        {
+                            <div class="alert alert-warning mt-3">
+                                <p>Se ha desvinculado el material. Si este registro fue un error y desea archivarlo, puede desactivarlo:</p>
+                                <button type="button" class="btn btn-danger" @onclick="DesactivarServicio">
+                                    <i class="oi oi-circle-x"></i> Desactivar Servicio
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="material-selected-item p-3 border rounded shadow-sm bg-light">
+                            <h5>Material Asociado: **@Input.NombreMaterial**</h5>
+                            
+                            <div class="form-row">
+                                <label class="required">Consumo por Unidad (0.5 o 1.0):</label>
+                                <InputNumber @bind-Value="Input.ConsumoPorUnidad" 
+                                             Culture="System.Globalization.CultureInfo.InvariantCulture" 
+                                             step="0.5" 
+                                             min="0.5" />
+                                <ValidationMessage For="() => Input.ConsumoPorUnidad" class="text-danger" />
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-danger mt-2" @onclick="RemoverMaterialAsociado">
+                                <i class="oi oi-trash"></i> Remover Material
+                            </button>
+                        </div>
+                       
+                    }
+                </div>
+
+
+            </div> 
 
             <div class="card-footer-buttons">
                 <button type="button" class="btn-volver" @onclick="IrAListaServicios">Volver</button>
@@ -81,9 +145,13 @@
     public int IdServicio { get; set; }
 
     private string? statusMessage;
+    private string BusquedaMaterial = string.Empty;
+    private List<Materiales>? MaterialesEncontrados;
+    private bool MostrarOpcionEliminar = false; 
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -94,9 +162,18 @@
             if (servicioEnBD != null)
             {
                 Input.Nombre = servicioEnBD.Nombre;
-                Input.Precio = servicioEnBD.Precio;
+                Input.Precio = servicioEnBD.Precio; 
+                
                 Input.TipoServicio = servicioEnBD.TipoServicio;
                 Input.Activo = servicioEnBD.Activo;
+                
+                Input.IdMaterial = servicioEnBD.IdMaterial;
+                Input.ConsumoPorUnidad = servicioEnBD.ConsumoPorUnidad;
+                
+                if (servicioEnBD.Materiales != null)
+                {
+                    Input.NombreMaterial = servicioEnBD.Materiales.Nombre;
+                }
             }
             else
             {
@@ -106,43 +183,113 @@
         }
         else
         {
-            Input.Activo = true; // Por defecto activo al crear
+            Input.Activo = true;
+        }
+        
+        MostrarOpcionEliminar = false; 
+    }
+    
+    
+    private async Task BuscarMateriales()
+    {
+        if (string.IsNullOrWhiteSpace(BusquedaMaterial) || BusquedaMaterial.Length < 2)
+        {
+            MaterialesEncontrados = null;
+            return;
+        }
+        
+        MaterialesEncontrados = await materialesService.BuscarMaterialesPorNombre(BusquedaMaterial);
+    }
+    
+    private void SeleccionarMaterial(Materiales material)
+    {
+        Input.IdMaterial = material.IdMaterial;
+        Input.NombreMaterial = material.Nombre;
+        Input.ConsumoPorUnidad = 1.0; 
+        
+        BusquedaMaterial = string.Empty;
+        MaterialesEncontrados = null;
+        MostrarOpcionEliminar = false; 
+    }
+    
+    private void RemoverMaterialAsociado()
+    {
+        Input.IdMaterial = null;
+        Input.NombreMaterial = string.Empty;
+        Input.ConsumoPorUnidad = null;
+        
+        if (IdServicio > 0)
+        {
+            MostrarOpcionEliminar = true;
         }
     }
 
+    private async Task DesactivarServicio()
+    {
+        var servicio = await servicioService.Buscar(IdServicio);
+        if (servicio != null)
+        {
+            servicio.Activo = false;
+            var guardado = await servicioService.Guardar(servicio);
+            
+            if (guardado)
+            {
+                toastService.ShowWarning($"Servicio '{servicio.Nombre}' ha sido desactivado.");
+                await Task.Delay(1500);
+                IrAListaServicios();
+            }
+            else
+            {
+                toastService.ShowError("Error al desactivar el servicio.");
+            }
+        }
+    }
+    
+    
     private async Task GuardarServicio()
     {
         statusMessage = null;
         bool guardado;
 
+        var existeNombre = await servicioService.ExisteNombre(Input.Nombre, IdServicio);
+
+        if (existeNombre)
+        {
+            statusMessage = "Error: Ya existe un servicio/producto con este nombre. Por favor, use otro.";
+            toastService.ShowError(statusMessage);
+            return;
+        }
+
+        if (Input.IdMaterial == null)
+        {
+            Input.ConsumoPorUnidad = null;
+        }
+
         var servicio = new Servicios
         {
             IdServicio = IdServicio,
             Nombre = Input.Nombre,
-            Precio = Input.Precio,
+            Precio = Input.Precio, 
+            
             TipoServicio = Input.TipoServicio,
-            Activo = Input.Activo
+            Activo = Input.Activo,
+            
+            IdMaterial = Input.IdMaterial,
+            ConsumoPorUnidad = Input.ConsumoPorUnidad 
         };
 
-        if (IdServicio > 0)
-        {
-            guardado = await servicioService.Modificar(servicio);
-            statusMessage = guardado ? "Éxito: Servicio actualizado correctamente." : "Error al actualizar el servicio.";
-        }
-        else
-        {
-            guardado = await servicioService.Guardar(servicio);
-            statusMessage = guardado ? "Éxito: Servicio registrado correctamente." : "Error al registrar el servicio.";
-        }
+        guardado = await servicioService.Guardar(servicio);
 
         if (guardado)
         {
+            statusMessage = IdServicio > 0 ? "Éxito: Servicio actualizado correctamente." : "Éxito: Servicio registrado correctamente.";
             toastService.ShowSuccess(statusMessage);
             await Task.Delay(1500);
             IrAListaServicios();
         }
         else
         {
+            statusMessage = IdServicio > 0 ? "Error al actualizar el servicio." : "Error al registrar el servicio.";
             toastService.ShowError(statusMessage);
         }
     }
@@ -152,6 +299,7 @@
         navigationManager.NavigateTo("/lista-servicios");
     }
 
+    
     public sealed class InputModel
     {
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -160,11 +308,56 @@
 
         [Required(ErrorMessage = "El precio es obligatorio")]
         [Range(0.01, 1000000.00, ErrorMessage = "El precio debe ser mayor a cero")]
-        public decimal Precio { get; set; }
+        [CustomValidation(typeof(InputModel), nameof(ValidateTwoDecimals))] 
+        public decimal Precio { get; set; } 
 
         [Required(ErrorMessage = "El tipo de servicio es obligatorio")]
         public string TipoServicio { get; set; } = string.Empty;
 
         public bool Activo { get; set; } = true;
+        
+        public int? IdMaterial { get; set; }
+        public string NombreMaterial { get; set; } = string.Empty;
+
+        [CustomValidation(typeof(InputModel), nameof(ValidateConsumoEstricto))]
+        public double? ConsumoPorUnidad { get; set; }
+        
+        public static ValidationResult ValidateTwoDecimals(object? value, ValidationContext context)
+        {
+            if (value is decimal price)
+            {
+                if (decimal.Remainder(price * 100, 1) != 0)
+                {
+                    return new ValidationResult(
+                        "El precio no debe tener más de dos decimales (ej: 10.50).",
+                        new[] { context.MemberName }
+                    );
+                }
+            }
+            return ValidationResult.Success;
+        }
+        
+        public static ValidationResult ValidateConsumoEstricto(object? value, ValidationContext context)
+        {
+            var model = (InputModel)context.ObjectInstance;
+            
+            if (model.IdMaterial == null)
+            {
+                return ValidationResult.Success;
+            }
+
+            if (value is double val)
+            {
+                if (val == 0.5 || val == 1.0)
+                {
+                    return ValidationResult.Success;
+                }
+            }
+            
+            return new ValidationResult(
+                "El consumo debe ser estrictamente 0.5 o 1.0 por unidad de servicio, ya que hay un material asociado.", 
+                new[] { nameof(ConsumoPorUnidad) }
+            );
+        }
     }
 }
