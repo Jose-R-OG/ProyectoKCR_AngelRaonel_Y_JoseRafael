@@ -10,9 +10,9 @@
 @inject ToastService toastService
 @rendermode InteractiveServer
 
-<div class="list-card lista-materiales-page">
+<div class="lista-empleados-page">
     <div class="content">
-
+        <div class="list-card">
         <h1 class="list-title">INVENTARIO DE MATERIALES</h1>
 
         <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
@@ -38,7 +38,6 @@
         </div>
 
         <div class="table-container">
-
             @if (isLoading)
             {
                 <p class="loading-message">Cargando inventario de materiales...</p>
@@ -89,20 +88,21 @@
                     
                 </table>
             }
+                <tfoot>
+                    <tr>
+                        <td colspan="6" class="table-footer">
+                            <button class="btn-volver" @onclick="Volver">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
         </div>
-        
+           
     </div>
+    
 </div>
-<tfoot>
-    <tr>
-        <td colspan="6" class="table-footer">
-            <button class="btn-volver" @onclick="Volver">
-                <i class="bi bi-arrow-left"></i> Volver
-            </button>
-        </td>
-    </tr>
-</tfoot>
-
+</div>
 @code {
     private List<Materiales> MaterialesOriginales { get; set; } = new();
     private List<Materiales> MaterialesFiltrados { get; set; } = new();

@@ -13,128 +13,162 @@
 @inject ServiciosService servicioService
 @inject MaterialesService materialesService
 
-<div class="registro-container">
-    <div class="form-card">
-        <div class="card-header">
-            <h3>@(IdServicio > 0 ? "Modificar Servicio/Producto" : "Registro de Servicio/Producto")</h3>
-        </div>
+<div class="right-panel-form" style="width: 100%;">
+    <h1 class="welcome-title">@(IdServicio > 0 ? "Modificación de Servicio" : "Registro de Servicio/Producto")</h1>
+
+    <div class="form-card login-card">
 
         <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
 
         <EditForm Model="Input" OnValidSubmit="GuardarServicio" FormName="registro-servicio-form">
             <DataAnnotationsValidator />
+
+            <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")"
+               role="alert"
+               style="text-align:center; margin-bottom: 1rem;">@statusMessage</p>
+
             <ValidationSummary class="text-danger" role="alert" />
 
-            <div class="card-body">
-                <p class="@(string.IsNullOrEmpty(statusMessage) || statusMessage.StartsWith("Éxito") ? "text-success" : "text-danger")" role="alert">@statusMessage</p>
+            <table class="modern-form-table">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
 
-                <div class="form-row">
-                    <label>ID Servicio:</label>
-                    <input type="text" class="input-corto" readonly value="@(IdServicio > 0 ? IdServicio.ToString() : "Auto")" />
-                </div>
+                <tbody>
+                    <tr>
+                        <td><strong>ID Servicio:</strong></td>
+                        <td><input type="text" class="styled-input readonly" readonly value="@(IdServicio > 0 ? IdServicio.ToString() : "Auto")" /></td>
+                    </tr>
 
-                <div class="form-row">
-                    <label class="required">Nombre:</label>
-                    <InputText @bind-Value="Input.Nombre" />
-                    <ValidationMessage For="() => Input.Nombre" class="text-danger" />
-                </div>
+                    <tr>
+                        <td><label class="required">Nombre:</label></td>
+                        <td>
+                            <InputText @bind-Value="Input.Nombre" placeholder="Nombre del servicio o producto" class="styled-input" />
+                            <ValidationMessage For="() => Input.Nombre" class="text-danger" />
+                        </td>
+                    </tr>
 
-                <div class="form-row">
-                    <label class="required">Precio ($):</label>
-                    <InputNumber @bind-Value="Input.Precio" Culture="System.Globalization.CultureInfo.InvariantCulture" />
-                    <ValidationMessage For="() => Input.Precio" class="text-danger" />
-                </div>
+                    <tr>
+                        <td><label class="required">Precio ($):</label></td>
+                        <td>
+                            <InputNumber @bind-Value="Input.Precio" Culture="System.Globalization.CultureInfo.InvariantCulture" step="0.01" class="styled-input" />
+                            <ValidationMessage For="() => Input.Precio" class="text-danger" />
+                        </td>
+                    </tr>
 
-                <div class="form-row">
-                    <label class="required">Tipo:</label>
-                    <InputSelect @bind-Value="Input.TipoServicio" class="form-control">
-                        <option value="">-- Seleccione Tipo --</option>
-                        <option value="Express">Servicio Exprés</option>
-                        <option value="Diseno">Servicio de Diseño/Edición</option>
-                        <option value="Producto">Producto Físico</option>
-                    </InputSelect>
-                    <ValidationMessage For="() => Input.TipoServicio" class="text-danger" />
-                </div>
+                    <tr>
+                        <td><label class="required">Tipo:</label></td>
+                        <td>
+                            <InputSelect @bind-Value="Input.TipoServicio" class="styled-input">
+                                <option value="">-- Seleccione Tipo --</option>
+                                <option value="Express">Servicio Exprés</option>
+                                <option value="Diseno">Servicio de Diseño/Edición</option>
+                                <option value="Producto">Producto Físico</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => Input.TipoServicio" class="text-danger" />
+                        </td>
+                    </tr>
 
-                @if (IdServicio > 0)
-                {
-                    <div class="form-row">
-                        <label>Estado:</label>
-                        <InputSelect @bind-Value="Input.Activo" class="form-control input-corto">
-                            <option value="True">Activo</option>
-                            <option value="False">Inactivo</option>
-                        </InputSelect>
-                    </div>
-                }
-                
-                <hr class="mt-4 mb-4" />
-
-                <h4>Material de Consumo (Máx. 1 Material)</h4>
-                
-                <div class="material-search-section">
-                    @if (Input.IdMaterial == null)
+                    @if (IdServicio > 0)
                     {
-                        <div class="form-row-material">
-                            <InputText placeholder="Buscar material por nombre..." @bind-Value="BusquedaMaterial" @oninput="BuscarMateriales" />
-                            <button type="button" class="btn btn-sm btn-info" @onclick="() => { BusquedaMaterial = string.Empty; MaterialesEncontrados = null; MostrarOpcionEliminar = false; }">Limpiar Búsqueda</button>
-                        </div>
-                        
-                        @if (MaterialesEncontrados != null && MaterialesEncontrados.Any())
-                        {
-                            <div class="material-search-results">
-                                @foreach (var material in MaterialesEncontrados)
-                                {
-                                    <div class="material-result-item">
-                                        <span>@material.Nombre (Existencia: @material.Existencia)</span>
-                                        <button type="button" class="btn btn-sm btn-success" @onclick="() => SeleccionarMaterial(material)">Seleccionar</button>
-                                    </div>
-                                }
-                            </div>
-                        }
-                        else if (!string.IsNullOrEmpty(BusquedaMaterial) && (MaterialesEncontrados == null || !MaterialesEncontrados.Any()))
-                        {
-                            <p class="text-muted">No se encontraron materiales activos con ese nombre.</p>
-                        }
-
-                        @if (MostrarOpcionEliminar)
-                        {
-                            <div class="alert alert-warning mt-3">
-                                <p>Se ha desvinculado el material. Si este registro fue un error y desea archivarlo, puede desactivarlo:</p>
-                                <button type="button" class="btn btn-danger" @onclick="DesactivarServicio">
-                                    <i class="oi oi-circle-x"></i> Desactivar Servicio
-                                </button>
-                            </div>
-                        }
+                        <tr>
+                            <td><label>Estado:</label></td>
+                            <td>
+                                <InputSelect @bind-Value="Input.Activo" class="styled-input input-corto">
+                                    <option value="True">Activo</option>
+                                    <option value="False">Inactivo</option>
+                                </InputSelect>
+                            </td>
+                        </tr>
                     }
-                    else
-                    {
-                        <div class="material-selected-item p-3 border rounded shadow-sm bg-light">
-                            <h5>Material Asociado: **@Input.NombreMaterial**</h5>
-                            
-                            <div class="form-row">
-                                <label class="required">Consumo por Unidad (0.5 o 1.0):</label>
-                                <InputNumber @bind-Value="Input.ConsumoPorUnidad" 
-                                             Culture="System.Globalization.CultureInfo.InvariantCulture" 
-                                             step="0.5" 
-                                             min="0.5" />
-                                <ValidationMessage For="() => Input.ConsumoPorUnidad" class="text-danger" />
-                            </div>
+                </tbody>
+            </table>
 
-                            <button type="button" class="btn btn-sm btn-danger mt-2" @onclick="RemoverMaterialAsociado">
-                                <i class="oi oi-trash"></i> Remover Material
+            <hr class="mt-4 mb-4" />
+            <h4 style="text-align: center; margin-bottom: 1rem;">Material de Consumo (Máx. 1 Material)</h4>
+
+            <div class="material-search-section p-3 border rounded">
+                @if (Input.IdMaterial == null)
+                {
+                    <div class="input-group mb-3 form-row-material">
+                        <InputText placeholder="Buscar material por nombre..." @bind-Value="BusquedaMaterial" @oninput="BuscarMateriales" class="form-control" />
+                        <button type="button" class="btn btn-sm btn-info" @onclick="() => { BusquedaMaterial = string.Empty; MaterialesEncontrados = null; MostrarOpcionEliminar = false; }">Limpiar Búsqueda</button>
+                    </div>
+
+                    @if (MaterialesEncontrados != null && MaterialesEncontrados.Any())
+                    {
+                        <div class="material-search-results list-group">
+                            @foreach (var material in MaterialesEncontrados)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@material.Nombre (Existencia: @material.Existencia)</span>
+                                    <button type="button" class="btn btn-sm btn-success" @onclick="() => SeleccionarMaterial(material)">Seleccionar</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(BusquedaMaterial) && (MaterialesEncontrados == null || !MaterialesEncontrados.Any()))
+                    {
+                        <p class="text-muted">No se encontraron materiales activos con ese nombre.</p>
+                    }
+
+                    @if (MostrarOpcionEliminar)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            <p>Se ha desvinculado el material. Si este registro fue un error y desea archivarlo, puede desactivarlo:</p>
+                            <button type="button" class="btn btn-danger btn-sm" @onclick="DesactivarServicio">
+                                <i class="oi oi-circle-x"></i> Desactivar Servicio
                             </button>
                         </div>
-                       
                     }
-                </div>
+                }
+                else
+                {
+                    <div class="material-selected-item p-3 border rounded shadow-sm bg-light">
+                        <h5>Material Asociado: **@Input.NombreMaterial**</h5>
 
+                        <table class="modern-form-table inner-table mt-2">
+                            <tbody>
+                                <tr>
+                                    <td><label class="required">Consumo por Unidad (0.5 o 1.0):</label></td>
+                                    <td>
+                                        <InputNumber @bind-Value="Input.ConsumoPorUnidad"
+                                                     Culture="System.Globalization.CultureInfo.InvariantCulture"
+                                                     step="0.5"
+                                                     min="0.5"
+                                                     class="styled-input input-corto" />
+                                        <ValidationMessage For="() => Input.ConsumoPorUnidad" class="text-danger" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-            </div> 
-
-            <div class="card-footer-buttons">
-                <button type="button" class="btn-volver" @onclick="IrAListaServicios">Volver</button>
-                <button type="submit" class="btn-guardar">@(IdServicio > 0 ? "Actualizar" : "Guardar")</button>
+                        <button type="button" class="btn btn-sm btn-danger mt-2" @onclick="RemoverMaterialAsociado">
+                            <i class="oi oi-trash"></i> Remover Material
+                        </button>
+                    </div>
+                }
             </div>
+
+            <table class="modern-form-table mt-4">
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="table-footer">
+                            <div class="table-action-buttons">
+                                <button type="button" class="btn-volver" @onclick="IrAListaServicios">
+                                    <i class="bi bi-arrow-left"></i> Volver
+                                </button>
+                                <button type="submit" class="btn-guardar">
+                                    <i class="bi bi-check-circle"></i> @(IdServicio > 0 ? "Actualizar" : "Guardar")
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </EditForm>
     </div>
     <img src="/Img-Vector/Union.svg" class="vector-corner" />
@@ -147,7 +181,7 @@
     private string? statusMessage;
     private string BusquedaMaterial = string.Empty;
     private List<Materiales>? MaterialesEncontrados;
-    private bool MostrarOpcionEliminar = false; 
+    private bool MostrarOpcionEliminar = false;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -162,14 +196,14 @@
             if (servicioEnBD != null)
             {
                 Input.Nombre = servicioEnBD.Nombre;
-                Input.Precio = servicioEnBD.Precio; 
-                
+                Input.Precio = servicioEnBD.Precio;
+
                 Input.TipoServicio = servicioEnBD.TipoServicio;
                 Input.Activo = servicioEnBD.Activo;
-                
+
                 Input.IdMaterial = servicioEnBD.IdMaterial;
                 Input.ConsumoPorUnidad = servicioEnBD.ConsumoPorUnidad;
-                
+
                 if (servicioEnBD.Materiales != null)
                 {
                     Input.NombreMaterial = servicioEnBD.Materiales.Nombre;
@@ -185,11 +219,11 @@
         {
             Input.Activo = true;
         }
-        
-        MostrarOpcionEliminar = false; 
+
+        MostrarOpcionEliminar = false;
     }
-    
-    
+
+
     private async Task BuscarMateriales()
     {
         if (string.IsNullOrWhiteSpace(BusquedaMaterial) || BusquedaMaterial.Length < 2)
@@ -197,27 +231,27 @@
             MaterialesEncontrados = null;
             return;
         }
-        
+
         MaterialesEncontrados = await materialesService.BuscarMaterialesPorNombre(BusquedaMaterial);
     }
-    
+
     private void SeleccionarMaterial(Materiales material)
     {
         Input.IdMaterial = material.IdMaterial;
         Input.NombreMaterial = material.Nombre;
-        Input.ConsumoPorUnidad = 1.0; 
-        
+        Input.ConsumoPorUnidad = 1.0;
+
         BusquedaMaterial = string.Empty;
         MaterialesEncontrados = null;
-        MostrarOpcionEliminar = false; 
+        MostrarOpcionEliminar = false;
     }
-    
+
     private void RemoverMaterialAsociado()
     {
         Input.IdMaterial = null;
         Input.NombreMaterial = string.Empty;
         Input.ConsumoPorUnidad = null;
-        
+
         if (IdServicio > 0)
         {
             MostrarOpcionEliminar = true;
@@ -231,7 +265,7 @@
         {
             servicio.Activo = false;
             var guardado = await servicioService.Guardar(servicio);
-            
+
             if (guardado)
             {
                 toastService.ShowWarning($"Servicio '{servicio.Nombre}' ha sido desactivado.");
@@ -244,13 +278,14 @@
             }
         }
     }
-    
-    
+
+
     private async Task GuardarServicio()
     {
         statusMessage = null;
         bool guardado;
 
+ 
         var existeNombre = await servicioService.ExisteNombre(Input.Nombre, IdServicio);
 
         if (existeNombre)
@@ -269,13 +304,13 @@
         {
             IdServicio = IdServicio,
             Nombre = Input.Nombre,
-            Precio = Input.Precio, 
-            
+            Precio = Input.Precio,
+
             TipoServicio = Input.TipoServicio,
             Activo = Input.Activo,
-            
+
             IdMaterial = Input.IdMaterial,
-            ConsumoPorUnidad = Input.ConsumoPorUnidad 
+            ConsumoPorUnidad = Input.ConsumoPorUnidad
         };
 
         guardado = await servicioService.Guardar(servicio);
@@ -299,7 +334,7 @@
         navigationManager.NavigateTo("/lista-servicios");
     }
 
-    
+
     public sealed class InputModel
     {
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -308,20 +343,20 @@
 
         [Required(ErrorMessage = "El precio es obligatorio")]
         [Range(0.01, 1000000.00, ErrorMessage = "El precio debe ser mayor a cero")]
-        [CustomValidation(typeof(InputModel), nameof(ValidateTwoDecimals))] 
-        public decimal Precio { get; set; } 
+        [CustomValidation(typeof(InputModel), nameof(ValidateTwoDecimals))]
+        public decimal Precio { get; set; }
 
         [Required(ErrorMessage = "El tipo de servicio es obligatorio")]
         public string TipoServicio { get; set; } = string.Empty;
 
         public bool Activo { get; set; } = true;
-        
+
         public int? IdMaterial { get; set; }
         public string NombreMaterial { get; set; } = string.Empty;
 
         [CustomValidation(typeof(InputModel), nameof(ValidateConsumoEstricto))]
         public double? ConsumoPorUnidad { get; set; }
-        
+
         public static ValidationResult ValidateTwoDecimals(object? value, ValidationContext context)
         {
             if (value is decimal price)
@@ -336,11 +371,11 @@
             }
             return ValidationResult.Success;
         }
-        
+
         public static ValidationResult ValidateConsumoEstricto(object? value, ValidationContext context)
         {
             var model = (InputModel)context.ObjectInstance;
-            
+
             if (model.IdMaterial == null)
             {
                 return ValidationResult.Success;
@@ -353,9 +388,9 @@
                     return ValidationResult.Success;
                 }
             }
-            
+
             return new ValidationResult(
-                "El consumo debe ser estrictamente 0.5 o 1.0 por unidad de servicio, ya que hay un material asociado.", 
+                "El consumo debe ser estrictamente 0.5 o 1.0 por unidad de servicio, ya que hay un material asociado.",
                 new[] { nameof(ConsumoPorUnidad) }
             );
         }

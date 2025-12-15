@@ -13,7 +13,6 @@
         <div class="list-card">
             <h1 class="list-title">LISTADO DE EMPLEADOS</h1>
 
-            <!-- BARRA DE FILTROS + BÚSQUEDA + BOTÓN -->
             <div class="top-toolbar">
                 <div class="filter-group">
                     <label>Filtrar por</label>
@@ -41,7 +40,6 @@
                 </div>
             </div>
 
-            <!-- TABLA CON SCROLL INTERNO Y BOTÓN EN TFOOT -->
             <div class="table-container">
                 @if (isLoading)
                 {
@@ -89,18 +87,18 @@
                                     </tr>
                                 }
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="6" class="table-footer">
-                                        <button class="btn-volver" @onclick="Volver">
-                                            <i class="bi bi-arrow-left"></i> Volver
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 }
+                <tfoot>
+                    <tr>
+                        <td colspan="6" class="table-footer">
+                            <button class="btn-volver" @onclick="Volver">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
             </div>
         </div>
     </div>

@@ -8,92 +8,108 @@
 @inject NavigationManager navigationManager
 @inject ToastService toastService
 
-<div class="lista-container">
-    <div class="form-card">
-        <div class="card-header">
-            <h3>📋 Lista de Servicios y Productos</h3>
-        </div>
+<div class="card shadow">
+    <div class="list-card">
+        <h1 class="list-title">📋 LISTA DE SERVICIOS Y PRODUCTOS</h1>
 
         <Toasts class="p-3 toast-grande" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
 
-        <div class="card-body">
-            <div class="search-and-new">
-                <div class="search-box">
+        <div class="top-toolbar">
+            <div class="search-group">
+                <label for="search-input">Búsqueda</label>
+                <div class="search-input-container">
                     <input type="text"
-                           placeholder="Buscar por Nombre..."
+                           id="search-input"
+                           class="form-control"
+                           placeholder="Buscar por nombre o ID..."
                            @bind-value="FiltroNombre"
                            @bind-value:event="oninput"
                            @onkeyup="FiltrarServicios" />
+                    <span class="search-icon">🔍</span>
                 </div>
-                <button class="btn btn-success btn-sm" @onclick="IrARegistro">
-                    + Nuevo Servicio/Producto
-                </button>
             </div>
 
-            @if (ServiciosListados == null)
-            {
-                <div class="text-center p-5">
-                    <p>Cargando servicios...</p>
-                    <div class="spinner-border text-info" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                </div>
-            }
-            else if (!ServiciosListados.Any())
-            {
-                <div class="alert alert-info mt-3">
-                    No se encontraron servicios registrados o que coincidan con el filtro.
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive mt-3">
-                    <table class="table table-striped table-hover small-text-table">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Tipo</th>
-                                <th>Material Consumo</th>
-                                <th>Consumo (Unidad)</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var servicio in ServiciosListados)
-                            {
-                                <tr>
-                                    <td>@servicio.IdServicio</td>
-                                    <td>@servicio.Nombre</td>
-                                    <td>@servicio.Precio.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-DO"))</td>
-                                    <td>@servicio.TipoServicio</td>
-                                    <td>@(servicio.Materiales?.Nombre ?? "N/A")</td>
-                                    <td>@(servicio.ConsumoPorUnidad.HasValue? servicio.ConsumoPorUnidad.Value.ToString("N1") : "N/A")</td>
-                                    <td>
-                                        <span class="badge @(servicio.Activo ? "bg-success" : "bg-danger")">
-                                            @(servicio.Activo ? "Activo" : "Inactivo")
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info me-2" @onclick="() => IrAEdicion(servicio.IdServicio)">
-                                            <i class="oi oi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-sm @(servicio.Activo ? "btn-warning" : "btn-primary")" @onclick="() => CambiarEstado(servicio)">
-                                            <i class="oi oi-@(servicio.Activo ? "circle-x" : "check")"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
+            <div class="button-group">
+                <button class="btn-action btn-registrar" @onclick="IrARegistro">
+                    <span class="icon">➕</span> Nuevo Servicio/Producto
+                </button>
+            </div>
         </div>
+
+        @if (ServiciosListados == null)
+        {
+            <div class="text-center p-5">
+                <p>Cargando servicios...</p>
+                <div class="spinner-border text-info" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        }
+        else if (!ServiciosListados.Any())
+        {
+            <div class="alert alert-info mt-3">
+                No se encontraron servicios registrados o que coincidan con el filtro.
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="modern-inventory-table">
+                    <thead>
+                        <tr>
+                            <th>ID <span class="sort-icon"></span></th>
+                            <th>Nombre <span class="sort-icon"></span></th>
+                            <th>Precio <span class="sort-icon"></span></th>
+                            <th>Tipo <span class="sort-icon"></span></th>
+                            <th>Material Consumo</th>
+                            <th>Consumo (Unidad)</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var servicio in ServiciosListados)
+                        {
+                            <tr>
+                                <td data-label="ID" class="text-center"><strong>#@servicio.IdServicio</strong></td>
+                                <td data-label="Nombre">@servicio.Nombre</td>
+                                <td data-label="Precio" class="text-end">@servicio.Precio.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-DO"))</td>
+                                <td data-label="Tipo">@servicio.TipoServicio</td>
+                                <td data-label="Material Consumo">@(servicio.Materiales?.Nombre ?? "N/A")</td>
+                                <td data-label="Consumo (Unidad)" class="text-center">@(servicio.ConsumoPorUnidad.HasValue? servicio.ConsumoPorUnidad.Value.ToString("N1") : "N/A")</td>
+                                <td data-label="Estado" class="text-center">
+                                    <span class="badge @(servicio.Activo ? "badge-activo" : "badge-inactivo")">
+                                        @(servicio.Activo ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td data-label="Acciones" class="action-cell">
+                                    <button class="btn-action btn-modificar btn-sm" @onclick="() => IrAEdicion(servicio.IdServicio)">
+                                        Edit
+                                    </button>
+                                    <button class="btn-action btn-eliminar btn-sm" @onclick="() => CambiarEstado(servicio)">
+                                        @(servicio.Activo ? "Desactivar" : "Activar")
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" class="table-footer">
+                            <button class="btn-volver" @onclick="Volver">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </div>
+
+        }
+
     </div>
-    <img src="/Img-Vector/Union.svg" class="vector-corner" />
 </div>
+<img src="/Img-Vector/Union.svg" class="vector-corner" />
 
 @code {
     private List<Servicios>? ServiciosOriginales;
@@ -113,7 +129,7 @@
 
     private async Task FiltrarServicios()
     {
-        await Task.Delay(200); 
+        await Task.Delay(200);
 
         if (ServiciosOriginales == null) return;
 
@@ -123,8 +139,13 @@
         }
         else
         {
+            var filtro = FiltroNombre.Trim();
+
             ServiciosListados = ServiciosOriginales
-                .Where(s => s.Nombre.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase))
+                .Where(s =>
+                    s.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                    s.IdServicio.ToString().Equals(filtro)
+                )
                 .ToList();
         }
     }
@@ -154,5 +175,10 @@
             toastService.ShowError($"Error al cambiar el estado del servicio '{servicio.Nombre}'.");
             servicio.Activo = !servicio.Activo;
         }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/");
     }
 }
